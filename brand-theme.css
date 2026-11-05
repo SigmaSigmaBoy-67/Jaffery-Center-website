@@ -1,4 +1,7 @@
 /* JC identity — tokens override the previous light palette without removing its layout. */
+@font-face { font-family: "DM Sans"; src: url("assets/fonts/dm-sans-latin-wght-normal.woff2") format("woff2"); font-style: normal; font-weight: 100 1000; font-display: swap; }
+@font-face { font-family: "Cormorant Garamond"; src: url("assets/fonts/cormorant-garamond-latin-400-normal.woff2") format("woff2"); font-style: normal; font-weight: 400; font-display: swap; }
+@font-face { font-family: "Cormorant Garamond"; src: url("assets/fonts/cormorant-garamond-latin-500-normal.woff2") format("woff2"); font-style: normal; font-weight: 500; font-display: swap; }
 @font-face { font-family: "Inter Tight"; src: url("assets/fonts/inter-tight-variable.ttf") format("truetype"); font-weight: 100 900; font-style: normal; font-display: swap; }
 @font-face { font-family: "Instrument Serif"; src: url("assets/fonts/instrument-serif-regular.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
 @font-face { font-family: "Instrument Serif"; src: url("assets/fonts/instrument-serif-italic.ttf") format("truetype"); font-weight: 400; font-style: italic; font-display: swap; }
@@ -19,8 +22,8 @@
   --gold: var(--accent);
   --muted: var(--secondary);
   --line: rgba(34,139,34,.3);
-  --sans: "Inter Tight", "IBM Plex Sans", Arial, sans-serif;
-  --serif: "Instrument Serif", Georgia, serif;
+  --sans: "DM Sans", "IBM Plex Sans", Arial, sans-serif;
+  --serif: "Cormorant Garamond", Georgia, serif;
   --glass-light: var(--glass-fill);
   --glass-dark: rgba(12,38,17,.7);
   --glass-rim: var(--border-green);
@@ -42,7 +45,7 @@ h3 { font-family: var(--sans); font-weight: 550; letter-spacing: -.02em; }
 .brand { color: var(--text); }
 .brand-text { font: 400 20px/1 var(--serif); letter-spacing: .055em; text-transform: uppercase; }
 .brand-text small { color: var(--secondary); font: 600 9px/1.1 var(--sans); letter-spacing: .24em; margin-top: 6px; }
-.brand-symbol, .footer-grid .brand-symbol { width: 44px; height: 44px; }
+.brand-symbol, .footer-grid .brand-symbol { width: 44px; height: 44px; border: 0; border-radius: 0; background: transparent; object-fit: contain; transform: none; }
 .site-header .brand, .site-header.is-scrolled .brand {
   background: rgba(0,0,0,.92); border-color: var(--border-green);
   box-shadow: inset 0 1px var(--silver-rim), 0 10px 28px #0008;
@@ -78,6 +81,19 @@ h3 { font-family: var(--sans); font-weight: 550; letter-spacing: -.02em; }
   background: linear-gradient(130deg, rgba(22,45,25,.76), rgba(6,11,7,.83));
   color: var(--text); border-color: var(--border-green);
   box-shadow: inset 0 1px var(--silver-rim), 0 24px 55px #0007;
+}
+/* Let the unchanged animated terrain read through the hero glass without
+   sacrificing contrast behind copy and controls. */
+.home-hero .hero-copy {
+  background: linear-gradient(135deg, rgba(10,20,12,.48), rgba(5,10,6,.62));
+  -webkit-backdrop-filter: blur(9px) saturate(1.06);
+  backdrop-filter: blur(9px) saturate(1.06);
+}
+.page-hero .wrap {
+  background: linear-gradient(135deg, rgba(10,20,12,.38), rgba(5,10,6,.52));
+  -webkit-backdrop-filter: blur(8px) saturate(1.06);
+  backdrop-filter: blur(8px) saturate(1.06);
+  box-shadow: inset 0 1px var(--silver-rim), 0 18px 44px rgba(0,0,0,.25);
 }
 .home-hero .hero-copy::before, .page-hero .wrap::before { background: linear-gradient(90deg, transparent, rgba(73,194,74,.56), transparent); }
 .hero-copy h1 span, .page-hero h1 span { color: #bde7b9; }
@@ -190,3 +206,52 @@ html::after {
   z-index:130;
 }
 @media(hover:none), (prefers-reduced-motion:reduce) { html::before { display:none; } }
+
+/* Premium editorial type and role-specific material finishes. */
+body { font-size: 16px; line-height: 1.65; }
+.body-copy, .lead { font-size: 16px; line-height: 1.78; }
+.nimbus-nav { gap: 3px; }
+.nimbus-item { min-height: 44px; padding-inline: 13px; }
+.nimbus-glass {
+  background: linear-gradient(155deg, rgba(44,58,44,.86), rgba(9,16,10,.91));
+  border-color: rgba(182,213,178,.34);
+  box-shadow: inset 0 1px rgba(240,248,237,.28), inset 0 -1px 2px rgba(0,0,0,.35), 0 14px 34px rgba(0,0,0,.42);
+}
+.nimbus-glass::after {
+  inset: 2px 14px auto;
+  height: 34%;
+  background: linear-gradient(180deg, rgba(238,247,232,.2), transparent);
+}
+.nimbus-drop {
+  will-change: transform, width;
+  backface-visibility: hidden;
+  transition: transform 460ms cubic-bezier(.2,.82,.23,1), width 460ms cubic-bezier(.2,.82,.23,1), opacity 130ms;
+}
+.glass--crystal {
+  background: linear-gradient(145deg, rgba(242,248,238,.16), rgba(215,231,210,.06));
+  border: 1px solid rgba(228,238,223,.38);
+  box-shadow: inset 0 1px rgba(255,255,255,.28), inset 0 -1px 2px rgba(10,25,12,.25), 0 15px 38px rgba(0,0,0,.23);
+}
+.glass--emerald {
+  background: linear-gradient(138deg, rgba(14,47,25,.8), rgba(6,18,9,.74));
+  border: 1px solid rgba(96,166,92,.44);
+  box-shadow: inset 0 1px rgba(225,241,218,.16), 0 20px 48px rgba(0,0,0,.28);
+}
+.glass--frosted, .glass--soft {
+  background: linear-gradient(145deg, rgba(30,43,31,.84), rgba(13,21,14,.78));
+  border: 1px solid rgba(191,218,185,.22);
+  box-shadow: inset 0 1px rgba(236,246,231,.14), 0 16px 36px rgba(0,0,0,.22);
+}
+@media (prefers-reduced-motion: reduce) {
+  .nimbus-drop { transition: none !important; }
+}
+/* The sticky capsule floats over the very top of each hero; its canvas starts
+   at the same edge, while the added hero top inset keeps all copy clear. */
+.site-header { margin-bottom: -84px; }
+.home-hero .hero-grid { padding-top: 131px; }
+.page-hero .wrap { margin-top: 110px; }
+@media (max-width: 1020px) {
+  .site-header { margin-bottom: -72px; }
+  .home-hero .hero-grid { padding-top: 118px; }
+  .page-hero .wrap { margin-top: 96px; }
+}

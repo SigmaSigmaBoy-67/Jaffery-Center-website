@@ -1,6 +1,6 @@
 # Jaffery Center of Roanoke — independent website
 
-This folder contains only the six-page Jaffery Center website. The original DeadlineOS application is not included. The logo in `assets/brand/jc-star.svg` is a **proposed design**, not an approved organizational identity. This site has **no active online donation destination**: Support Us offers an email inquiry, not a payment link.
+This folder contains only the six-page Jaffery Center website. The original DeadlineOS application is not included. The mihrab mark currently shown in the header, footer, and favicon from `assets/brand/mihrab-color.svg` is a **proposed presentation**, not an approved organizational identity. The earlier `assets/brand/jc-star.svg` and `assets/brand/jc-favicon.svg` remain available for comparison. This site has **no active online donation destination**: Support Us offers an email inquiry, not a payment link.
 
 ## Develop and verify
 

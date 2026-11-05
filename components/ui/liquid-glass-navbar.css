@@ -60,7 +60,7 @@
   border-radius: 999px;
   background: none;
   color: var(--n-soft);
-  font: 600 13px/1 var(--sans, system-ui, sans-serif);
+  font: 600 14px/1 var(--sans, system-ui, sans-serif);
   white-space: nowrap;
   text-decoration: none;
   cursor: pointer;

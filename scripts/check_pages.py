@@ -37,7 +37,7 @@ class Page(HTMLParser):
                 self.active.append(href)
         if tag == 'img':
             self.images.append(attrs.get('src', ''))
-            if attrs.get('src') == 'assets/brand/jc-star.svg' and self.section in self.brand_slots:
+            if attrs.get('src') == 'assets/brand/mihrab-color.svg' and self.section in self.brand_slots:
                 self.brand_slots[self.section] += 1
         if tag == 'link' and attrs.get('rel') == 'icon':
             self.favicons.append(attrs.get('href', ''))
@@ -75,8 +75,8 @@ for name in PAGES:
             assert href[1:] in page.ids, (name, href)
         elif href.endswith('.html'):
             assert (ROOT / href).is_file(), (name, href)
-    assert page.favicons == ['assets/brand/jc-favicon.svg'], name
-    assert page.images.count('assets/brand/jc-star.svg') == 2, name
+    assert page.favicons == ['assets/brand/mihrab-color.svg'], name
+    assert page.images.count('assets/brand/mihrab-color.svg') == 2, name
     assert page.brand_slots == {'header': 1, 'footer': 1}, name  # one mark per original branding slot
     for image in (*page.images, *page.favicons):
         assert (ROOT / image).is_file(), (name, image)
