@@ -1,0 +1,116 @@
+/* The intro is a temporary, fixed overlay; the generated homepage remains mounted beneath it. */
+html[data-glyph-intro="pending"],
+html[data-glyph-intro="pending"] body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+#glyph-intro-root { display: none; }
+html[data-glyph-intro="pending"] #glyph-intro-root {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  background: #FAF8F2;
+  color: #103B35;
+  pointer-events: auto;
+}
+#glyph-intro-root .intro-poster {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #FAF8F2;
+}
+#glyph-intro-root .intro-poster-word,
+#glyph-intro-root .intro-word {
+  margin: 0;
+  color: #103B35;
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: min(17vw, 220px);
+  font-weight: 700;
+  line-height: .88;
+  letter-spacing: -.065em;
+  white-space: nowrap;
+}
+#glyph-intro-root .intro-poster-word { animation: glyph-title-in 680ms cubic-bezier(.2,.75,.24,1) both; }
+#glyph-intro-root .glyph-portal-intro {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100svh;
+  height: 100dvh;
+  min-height: 100svh;
+  overflow: hidden;
+  background: transparent !important;
+  color: #103B35;
+  --gp-paper: #FAF8F2;
+  --gp-ink: #103B35;
+  --gp-field: transparent;
+  --gp-foreground: #103B35;
+  font-family: "DM Sans", Arial, sans-serif;
+}
+#glyph-intro-root .glyph-portal-intro[data-gp-autoplay="true"] [data-gp-pin] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: var(--gp-height, 100svh);
+  overflow: hidden;
+}
+#glyph-intro-root .glyph-portal-intro [data-gp-field] {
+  background: transparent !important;
+  opacity: 1 !important;
+}
+#glyph-intro-root .glyph-portal-intro [data-gp-veil] {
+  background: #FAF8F2;
+  opacity: 1;
+  -webkit-mask-image: url(#gp-portal-mask);
+  mask-image: url(#gp-portal-mask);
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-size: 100% 100%;
+  mask-size: 100% 100%;
+  mask-mode: luminance;
+}
+#glyph-intro-root .glyph-portal-intro [data-gp-art] { z-index: 3; }
+#glyph-intro-root .glyph-portal-intro [data-gp-front] {
+  z-index: 4;
+  display: grid;
+  place-items: center;
+}
+#glyph-intro-root .intro-word { animation: glyph-title-in 680ms cubic-bezier(.2,.75,.24,1) both; }
+#glyph-intro-root .intro-skip {
+  pointer-events: auto;
+  position: absolute;
+  z-index: 1010;
+  top: max(22px, env(safe-area-inset-top));
+  right: max(22px, env(safe-area-inset-right));
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgba(16,59,53,.2);
+  border-radius: 999px;
+  background: rgba(250,248,242,.88);
+  color: #103B35;
+  box-shadow: 0 4px 14px rgba(16,59,53,.08), inset 0 1px rgba(255,255,255,.9);
+  font: 600 13px/1 "DM Sans", Arial, sans-serif;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+#glyph-intro-root .intro-skip:hover { background: #fffdf8; border-color: rgba(16,59,53,.42); transform: translateY(-1px); }
+#glyph-intro-root .intro-skip:focus-visible { outline: 3px solid #9a7746; outline-offset: 4px; }
+@keyframes glyph-title-in {
+  from { opacity: 0; transform: translateY(52px); }
+  82% { opacity: 1; transform: translateY(-1px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@media (max-width: 600px) {
+  #glyph-intro-root .intro-poster-word,
+  #glyph-intro-root .intro-word { font-size: min(17vw, 16vh, 82px); letter-spacing: -.055em; }
+  #glyph-intro-root .intro-skip { top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #glyph-intro-root .intro-poster-word, #glyph-intro-root .intro-word { animation: none; opacity: 1; transform: none; }
+  #glyph-intro-root .intro-skip { transition: none; }
+}

@@ -61,6 +61,12 @@ for name in PAGES:
     assert 'main' in page.ids and 'liquid-nav-root' in page.ids and 'footer-root' in page.ids, name
     assert 'hero-hills-root' in page.ids and '/src/hills-entry.tsx' in text, name
     assert 'site.js' in text, name
+    if name == 'index':
+        assert 'glyph-intro-root' in page.ids and '/src/glyph-intro-entry.tsx' in text
+        assert 'jaffery-glyph-intro-v1' in text and 'prefers-reduced-motion: reduce' in text
+        assert 'data-gp-skip' in text and '#FAF8F2' in text
+    else:
+        assert 'glyph-intro-root' not in page.ids and 'glyph-intro-entry.tsx' not in text, name
     assert '/src/footer-entry.tsx' in text and page.footer_config, name
     assert len(page.footer_config['explore']) == 6 and len(page.footer_config['find']) == 3, name
     for item in [page.footer_config['cta'], *page.footer_config['explore'], *page.footer_config['find']]:
