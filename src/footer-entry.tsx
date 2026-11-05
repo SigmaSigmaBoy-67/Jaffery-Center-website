@@ -13,14 +13,14 @@ interface FooterConfig {
 }
 
 const palette: MeadowPalette = {
-  sky: ['#060907', '#0c120d'], haze: '#17291b', glow: '#214526',
-  ground: '#060907', ink: '#e6e6e0', sub: '#c7d0c5',
-  pill: '#1e6427', pillInk: '#e6e6e0', text: '#e6e6e0',
-  muted: '#b6c3b4', line: 'rgba(73,194,74,0.3)',
+  sky: ['#eee8dc', '#f4efe4'], haze: '#dfd7c5', glow: '#b6a57d',
+  ground: '#f4efe4', ink: '#26352b', sub: '#46564a',
+  pill: '#244f38', pillInk: '#fbf8f0', text: '#26352b',
+  muted: '#536153', line: 'rgba(46,72,51,0.24)',
   hills: [
-    ['#1e4726', '#13331a'], ['#20522a', '#153820'],
-    ['#21602c', '#173f22'], ['#1e5228', '#12391c'],
-    ['#174520', '#0e2b16'], ['#10331a', '#060907'],
+    ['#97a58a', '#788b70'], ['#829779', '#687f64'],
+    ['#718b68', '#587653'], ['#607e59', '#486b4b'],
+    ['#4d704b', '#365c40'], ['#3b5f40', '#274b35'],
   ],
 }
 

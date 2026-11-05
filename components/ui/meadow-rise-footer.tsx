@@ -151,7 +151,7 @@ export default function MeadowRiseFooter({
     '--mrf-height': height, '--mrf-hero': heroHeight, '--mrf-ground': palette.ground,
     '--mrf-ink': palette.ink, '--mrf-sub': palette.sub, '--mrf-pill': palette.pill,
     '--mrf-pill-ink': palette.pillInk, '--mrf-pill-hover': '#236f2b',
-    '--mrf-accent': '#8cdb87', '--mrf-edge': '#49c24a', '--mrf-text': palette.text,
+    '--mrf-accent': '#456c4f', '--mrf-edge': '#6f866e', '--mrf-text': palette.text,
     '--mrf-muted': palette.muted, '--mrf-line': palette.line,
     '--mrf-sans': fontFamily, '--mrf-serif': serifFamily,
   } as React.CSSProperties}>

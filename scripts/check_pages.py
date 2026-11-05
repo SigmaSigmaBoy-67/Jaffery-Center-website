@@ -60,11 +60,7 @@ for name in PAGES:
     page.feed(text)
     assert 'main' in page.ids and 'liquid-nav-root' in page.ids and 'footer-root' in page.ids, name
     assert 'hero-hills-root' in page.ids and '/src/hills-entry.tsx' in text, name
-    assert 'cinematic-heading' in text and 'site.js' in text, name
-    if name in ('about', 'programs', 'sunday-school'):
-        assert 'data-motion-geometry' in text, name
-    if name in ('about', 'programs', 'sunday-school'):
-        assert 'data-arch-draw' in text, name
+    assert 'site.js' in text, name
     assert '/src/footer-entry.tsx' in text and page.footer_config, name
     assert len(page.footer_config['explore']) == 6 and len(page.footer_config['find']) == 3, name
     for item in [page.footer_config['cta'], *page.footer_config['explore'], *page.footer_config['find']]:

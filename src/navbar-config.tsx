@@ -1,10 +1,11 @@
-import { NimbusIcons, type LiquidNavItem } from '@/components/ui/liquid-glass-navbar'
+import type { LiquidNavItem } from '@/components/ui/liquid-glass-navbar'
 
+/** A deliberately quiet, text-first journal navigation. */
 export const items: LiquidNavItem[] = [
-  { label: 'Home', href: 'index.html', icon: NimbusIcons.home },
-  { label: 'About', href: 'about.html', icon: NimbusIcons.user },
-  { label: 'Programs', href: 'programs.html', icon: NimbusIcons.globe },
-  { label: 'Sunday School', href: 'sunday-school.html', icon: NimbusIcons.book },
-  { label: 'Visit & Contact', href: 'visit.html', icon: NimbusIcons.pin },
-  { label: 'Support us', href: 'donate.html', icon: NimbusIcons.heart },
+  { label: 'Home', href: 'index.html' },
+  { label: 'About', href: 'about.html' },
+  { label: 'Programs', href: 'programs.html' },
+  { label: 'Sunday School', href: 'sunday-school.html' },
+  { label: 'Visit & Contact', href: 'visit.html' },
+  { label: 'Support us', href: 'donate.html' },
 ]
