@@ -8,6 +8,8 @@ type GLSLHillsProps = {
   cameraZ?: number
   planeSize?: number
   speed?: number
+  /** Angular velocity of the terrain's slow, continuous turn, in radians per second. */
+  spin?: number
 }
 
 const vertexShader = `
@@ -16,6 +18,7 @@ attribute vec3 position;
 uniform mat4 projectionMatrix;
 uniform mat4 modelViewMatrix;
 uniform float time;
+uniform float rotation;
 varying vec3 vPosition;
 
 vec3 mod289(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
@@ -78,10 +81,19 @@ float cnoise(vec3 P) {
   return 2.2 * mix(n_yz.x,n_yz.y,fade_xyz.x);
 }
 
+vec2 rotatePoint(vec2 point, float angle) {
+  float sine = sin(angle);
+  float cosine = cos(angle);
+  return mat2(cosine, -sine, sine, cosine) * point;
+}
+
 void main() {
   vec3 updatePosition = vec3(position.x, 0.0, -position.y);
   float sin1 = sin(radians(updatePosition.x / 128.0 * 90.0));
   vec3 noisePosition = updatePosition + vec3(0.0, 0.0, time * -30.0);
+  // Rotate the procedural terrain field in place so the green ridges gently turn
+  // rather than translating off-screen or spinning the page content.
+  noisePosition.xz = rotatePoint(noisePosition.xz, rotation);
   float noise1 = cnoise(noisePosition * 0.08);
   float noise2 = cnoise(noisePosition * 0.06);
   float noise3 = cnoise(noisePosition * 0.4);
@@ -100,7 +112,7 @@ void main() {
   gl_FragColor = vec4(vec3(0.22, 0.70, 0.28), opacity);
 }`
 
-export function GLSLHills({ width = '100%', height = '100%', cameraZ = 125, planeSize = 256, speed = 0.5 }: GLSLHillsProps) {
+export function GLSLHills({ width = '100%', height = '100%', cameraZ = 125, planeSize = 256, speed = 0.5, spin = 0.32 }: GLSLHillsProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -120,7 +132,7 @@ export function GLSLHills({ width = '100%', height = '100%', cameraZ = 125, plan
     camera.position.set(0, 16, cameraZ)
     camera.lookAt(0, 28, 0)
     const geometry = new THREE.PlaneGeometry(planeSize, planeSize, 96, 96)
-    const uniforms = { time: { value: 0 } }
+    const uniforms = { time: { value: 0 }, rotation: { value: 0 } }
     const material = new THREE.RawShaderMaterial({ uniforms, vertexShader, fragmentShader, transparent: true, depthWrite: true, side: THREE.FrontSide })
     const plane = new THREE.Mesh(geometry, material)
     scene.add(plane)
@@ -144,7 +156,9 @@ export function GLSLHills({ width = '100%', height = '100%', cameraZ = 125, plan
     const tick = (now: number) => {
       if (!visible || document.hidden) return
       if (now - last >= 40) { // Cap animation at ~25 fps to keep the decorative effect inexpensive.
-        uniforms.time.value += Math.min((now - last) / 1000, 0.1) * speed
+        const delta = Math.min((now - last) / 1000, 0.1)
+        uniforms.time.value += delta * speed
+        uniforms.rotation.value = (uniforms.rotation.value + delta * spin) % (Math.PI * 2)
         renderer.render(scene, camera)
         last = now
       }
@@ -182,7 +196,7 @@ export function GLSLHills({ width = '100%', height = '100%', cameraZ = 125, plan
       renderer.dispose()
       renderer.forceContextLoss()
     }
-  }, [cameraZ, planeSize, speed])
+  }, [cameraZ, planeSize, speed, spin])
 
   return <div ref={containerRef} style={{ position: 'relative', width, height }} aria-hidden="true">
     <canvas ref={canvasRef} style={{ position: 'absolute', inset: 0, display: 'block', width: '100%', height: '100%' }} />
