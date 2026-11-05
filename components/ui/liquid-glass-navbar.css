@@ -46,6 +46,8 @@
   transition: transform 410ms cubic-bezier(.22,.9,.25,1), width 410ms cubic-bezier(.22,.9,.25,1), opacity 130ms;
 }
 .nimbus-nav[data-ready="true"] .nimbus-drop { opacity: 1; }
+.nimbus-nav[data-measuring="true"] .nimbus-drop { transition: none !important; scale: 1 1; }
+.nimbus-drop { scale: var(--capsule-scale, 1) 1; transition: transform 460ms cubic-bezier(.2,.82,.23,1), width 460ms cubic-bezier(.2,.82,.23,1), scale 220ms cubic-bezier(.2,.8,.25,1), opacity 130ms; }
 /* Avoid an initial slide from x=0; enable glide only after first paint. */
 .nimbus-nav:not([data-motion="true"]) .nimbus-drop { transition: opacity 130ms; }
 .nimbus-item {
@@ -83,5 +85,5 @@
   .nimbus-glass { background: #ecf5ed; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .nimbus-drop { transition: none !important; }
+  .nimbus-drop { transition: none !important; scale: 1 1; }
 }

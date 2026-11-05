@@ -111,11 +111,13 @@ export function LiquidNavbar({
   const navRef = React.useRef<HTMLElement>(null);
   const indicatorRef = React.useRef<HTMLSpanElement>(null);
   const itemRefs = React.useRef<(HTMLElement | null)[]>([]);
+  const crossPageGlide = React.useRef(false);
+  const stretchTimer = React.useRef<number | undefined>(undefined);
   const [ready, setReady] = React.useState(false);
 
-  const measure = React.useCallback(() => {
+  const measure = React.useCallback((index = current, glide = false) => {
     const nav = navRef.current;
-    const item = itemRefs.current[current];
+    const item = itemRefs.current[index];
     const indicator = indicatorRef.current;
     if (!nav || !item || !indicator) return;
     // DOMRects are measured in the same coordinate space; offsetLeft would
@@ -123,6 +125,16 @@ export function LiquidNavbar({
     const box = nav.getBoundingClientRect();
     const target = item.getBoundingClientRect();
     if (!box.width || !target.width) return;
+    const previous = indicator.getBoundingClientRect();
+    if (glide && Math.abs(target.left - previous.left) > 3) {
+      indicator.dataset.travel = target.left >= previous.left ? "forward" : "backward";
+      indicator.style.setProperty("--capsule-scale", "1.045");
+      window.clearTimeout(stretchTimer.current);
+      stretchTimer.current = window.setTimeout(() => {
+        indicator.style.setProperty("--capsule-scale", "1");
+        stretchTimer.current = undefined;
+      }, 260);
+    }
     const x = target.left - box.left;
     indicator.style.width = `${target.width}px`;
     indicator.style.height = `${target.height}px`;
@@ -131,7 +143,21 @@ export function LiquidNavbar({
     setReady(true);
   }, [current]);
 
-  React.useLayoutEffect(() => { measure(); }, [measure]);
+  React.useEffect(() => () => window.clearTimeout(stretchTimer.current), []);
+
+  React.useLayoutEffect(() => {
+    let previous = -1;
+    try {
+      const pendingValue = sessionStorage.getItem("jc-nav-pending");
+      sessionStorage.removeItem("jc-nav-pending");
+      const pending = JSON.parse(pendingValue || "null") as { from?: number; to?: number; at?: number } | null;
+      if (pending?.to === current && typeof pending.at === "number" && Date.now() - pending.at < 2500) previous = Number(pending.from);
+    } catch { /* Storage may be disabled; the active link remains correct. */ }
+    if (Number.isInteger(previous) && previous >= 0 && previous < items.length && previous !== current) {
+      crossPageGlide.current = true;
+      measure(previous);
+    } else measure(current);
+  }, [measure, current, items.length]);
 
   // First measurement must paint before enabling transitions, or the drop can
   // visibly slide from the left edge on load. No timer or hydration-state race.
@@ -140,19 +166,39 @@ export function LiquidNavbar({
     let second = 0;
     const first = requestAnimationFrame(() => {
       second = requestAnimationFrame(() => {
-        if (navRef.current) navRef.current.dataset.motion = "true";
+        const nav = navRef.current;
+        if (!nav) return;
+        nav.dataset.motion = "true";
+        if (crossPageGlide.current) {
+          crossPageGlide.current = false;
+          requestAnimationFrame(() => measure(current, true));
+        }
       });
     });
     return () => { cancelAnimationFrame(first); cancelAnimationFrame(second); };
-  }, [ready]);
+  }, [ready, measure, current]);
 
   React.useEffect(() => {
     const nav = navRef.current;
     if (!nav) return;
     let frame = 0;
+    let settleFrame = 0;
+    let disposed = false;
     const schedule = () => {
+      if (disposed) return;
+      // Resize/font measurements should snap the single indicator to the new
+      // geometry; only an actual selection change should animate its travel.
+      nav.dataset.measuring = "true";
       cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(measure);
+      cancelAnimationFrame(settleFrame);
+      frame = requestAnimationFrame(() => {
+        frame = 0;
+        if (disposed) return;
+        measure();
+        settleFrame = requestAnimationFrame(() => {
+          if (!disposed) delete nav.dataset.measuring;
+        });
+      });
     };
     const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(schedule) : null;
     observer?.observe(nav);
@@ -161,10 +207,12 @@ export function LiquidNavbar({
     document.fonts?.addEventListener?.("loadingdone", schedule);
     void document.fonts?.ready.then(schedule);
     return () => {
+      disposed = true;
       observer?.disconnect();
       window.removeEventListener("resize", schedule);
       document.fonts?.removeEventListener?.("loadingdone", schedule);
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(settleFrame);
     };
   }, [items, measure]);
 
@@ -198,6 +246,8 @@ export function LiquidNavbar({
           "aria-current": index === current ? ("page" as const) : undefined,
           onClick: () => {
             if (index !== current && items[index].href) {
+              try { sessionStorage.setItem("jc-nav-pending", JSON.stringify({ from: current, to: index, at: Date.now() })); }
+              catch { /* Navigation and active state do not depend on storage. */ }
               // Begin the glide immediately while the browser follows the link.
               // No artificial navigation delay or stale state on the next page.
               const nav = navRef.current?.getBoundingClientRect();

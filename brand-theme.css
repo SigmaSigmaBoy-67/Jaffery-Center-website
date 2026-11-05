@@ -225,7 +225,8 @@ body { font-size: 16px; line-height: 1.65; }
 .nimbus-drop {
   will-change: transform, width;
   backface-visibility: hidden;
-  transition: transform 460ms cubic-bezier(.2,.82,.23,1), width 460ms cubic-bezier(.2,.82,.23,1), opacity 130ms;
+  scale: var(--capsule-scale, 1) 1;
+  transition: transform 460ms cubic-bezier(.2,.82,.23,1), width 460ms cubic-bezier(.2,.82,.23,1), scale 220ms cubic-bezier(.2,.8,.25,1), opacity 130ms;
 }
 .glass--crystal {
   background: linear-gradient(145deg, rgba(242,248,238,.16), rgba(215,231,210,.06));
@@ -254,4 +255,149 @@ body { font-size: 16px; line-height: 1.65; }
   .site-header { margin-bottom: -72px; }
   .home-hero .hero-grid { padding-top: 118px; }
   .page-hero .wrap { margin-top: 96px; }
+}
+
+/* Eight cohesive motion details: magnetic CTAs, point lights, fine geometry,
+   restrained depth, self-drawing arches, stable glass navigation, warm rays,
+   and semantic heading reveals. The hero shader remains untouched. */
+.magnetic-control {
+  translate: var(--mag-x, 0px) var(--mag-y, 0px);
+  transition: translate 220ms cubic-bezier(.2,.8,.25,1), box-shadow 240ms ease, border-color 220ms ease;
+  will-change: translate;
+}
+.btn-label {
+  position: relative;
+  z-index: 1;
+  transform: translate(var(--label-x, 0px), var(--label-y, 0px));
+  transition: transform 180ms ease-out;
+}
+.magnetic-control::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: inherit;
+  opacity: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse at var(--reflect-x, 50%) var(--reflect-y, 50%), rgba(255,255,255,.27), transparent 58%);
+  transition: opacity 180ms ease;
+}
+.magnetic-control:hover::before { opacity: 1; }
+.magnetic-control:focus-visible { translate: 0 0; }
+.magnetic-control:active::before { opacity: .85; }
+.magnetic-control .icon { position: relative; z-index: 1; }
+
+.spotlight-card { position: relative; isolation: isolate; }
+.spotlight-card > :not(.card-spotlight) { position: relative; z-index: 1; }
+.card-spotlight {
+  position: absolute;
+  z-index: 0;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  background: radial-gradient(220px circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgba(203,229,195,.17), transparent 72%);
+  transition: opacity 240ms ease;
+}
+.spotlight-card.is-lit { border-color: rgba(167,205,155,.4); box-shadow: inset 0 1px rgba(255,255,255,.14), 0 19px 42px rgba(0,0,0,.3); }
+.spotlight-card.is-lit .card-spotlight { opacity: 1; }
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+  .spotlight-card { transition: translate 300ms cubic-bezier(.2,.8,.25,1), border-color 220ms, box-shadow 240ms; }
+  .spotlight-card.is-lit { translate: 0 -4px; }
+}
+
+.architecture-light { position: relative; isolation: isolate; }
+.architecture-light::before {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 0;
+  bottom: 0;
+  left: 22%;
+  width: 58%;
+  pointer-events: none;
+  opacity: .18;
+  background: linear-gradient(112deg, transparent 26%, rgba(219,193,139,.12) 42%, rgba(237,225,190,.2) 50%, transparent 66%), radial-gradient(ellipse at 48% 0%, rgba(211,188,135,.13), transparent 58%);
+  background-size: 180% 100%, 100% 100%;
+  background-position: 0 0, 0 0;
+  animation: architectural-light-drift 54s ease-in-out infinite alternate paused;
+}
+.architecture-light.is-visible::before { animation-play-state: running; }
+.architecture-light > .wrap { position: relative; z-index: 1; }
+.geometry-ornament, .arch-ornament {
+  position: absolute;
+  z-index: 0;
+  width: clamp(138px, 18vw, 250px);
+  height: auto;
+  right: clamp(14px, 4vw, 70px);
+  top: 8%;
+  color: rgba(216,191,139,.66);
+  opacity: .16;
+  pointer-events: none;
+  transform: translate3d(0, var(--parallax-y, 0px), 0);
+}
+.geometry-ornament .geometry-lines {
+  stroke: currentColor;
+  stroke-width: .7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 3 5;
+  stroke-dashoffset: 180;
+  animation: geometry-draw 62s linear infinite paused;
+}
+.geometry-ornament.is-visible .geometry-lines { animation-play-state: running; }
+.arch-ornament {
+  width: clamp(112px, 14vw, 190px);
+  right: auto;
+  left: clamp(10px, 4vw, 56px);
+  top: 9%;
+  color: rgba(73,194,74,.55);
+  opacity: .16;
+}
+.arch-ornament path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.15;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 640;
+  stroke-dashoffset: 640;
+  filter: drop-shadow(0 0 4px rgba(221,194,136,.18));
+}
+.arch-ornament.is-drawn path { animation: arch-trace 1.65s cubic-bezier(.2,.7,.2,1) forwards; }
+.cinematic-ready .cinematic-heading {
+  animation: none !important;
+  opacity: 0;
+  transform: translateY(13px);
+  filter: blur(2px);
+  transition: opacity 680ms ease, transform 680ms cubic-bezier(.2,.8,.25,1), filter 680ms ease;
+}
+.cinematic-ready .cinematic-heading.is-visible { opacity: 1; transform: none; filter: blur(0); }
+@keyframes architectural-light-drift {
+  from { background-position: 0 0, 0 0; transform: translateX(-1.5%); }
+  to { background-position: 100% 0, 0 0; transform: translateX(1.5%); }
+}
+@keyframes geometry-draw { to { stroke-dashoffset: -180; } }
+@keyframes arch-trace { to { stroke-dashoffset: 0; } }
+@media (max-width: 767px) {
+  .geometry-ornament { width: 134px; right: -12px; opacity: .1; }
+  .arch-ornament { width: 104px; left: -8px; opacity: .1; }
+  .architecture-light::before { left: 12%; width: 76%; opacity: .12; animation: none; }
+  .geometry-ornament .geometry-lines { animation: none; stroke-dashoffset: 0; }
+  .magnetic-control { translate: none !important; will-change: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .magnetic-control, .btn-label, .card-spotlight, .spotlight-card, .geometry-ornament *,
+  .arch-ornament *, .architecture-light::before, .cinematic-ready .cinematic-heading {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+    filter: none !important;
+  }
+  .cinematic-ready .cinematic-heading { opacity: 1 !important; }
+  .magnetic-control { translate: none !important; }
+  .nimbus-drop { scale: 1 1 !important; }
+  .feature-card:hover, .event-card:hover, .program-tile:hover, .surface-panel:hover,
+  .step:hover, .donate-option:hover, .contact-card:hover, .direction-panel:hover, .notice:hover { translate: none !important; }
+  .geometry-ornament .geometry-lines, .arch-ornament path { stroke-dashoffset: 0; }
 }

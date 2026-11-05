@@ -1,6 +1,6 @@
 import { createRoot } from 'react-dom/client'
 import type { MeadowColumn, MeadowLink, MeadowPalette } from '@/components/ui/meadow-rise-footer'
-import logoUrl from '@/assets/brand/jc-star.svg?url'
+import logoUrl from '@/assets/brand/mihrab-color.svg?url'
 
 interface FooterConfig {
   heading: string
@@ -51,7 +51,7 @@ if (mount) {
         seed={3} height={mobile ? '640px' : '720px'}
         heroHeight={mobile ? '300px' : 'clamp(320px, 46svh, 460px)'}
         botanicals={!mobile} scrollParallax={!mobile} drift={0} interactive={false}
-        fontFamily={'"Inter Tight", Arial, sans-serif'} serifFamily={'"Instrument Serif", Georgia, serif'}
+        fontFamily={'"DM Sans", Arial, sans-serif'} serifFamily={'"Cormorant Garamond", Georgia, serif'}
       />)
     } catch {
       // Keep the complete, functional static footer if the island cannot load.
