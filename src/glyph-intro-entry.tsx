@@ -3,6 +3,7 @@ import "./glyph-intro.css";
 import type { GlyphPortalProps } from "../components/ui/glyph-portal";
 
 const ROOT_ID = "glyph-intro-root";
+const REACT_ROOT_ID = "glyph-intro-react-root";
 const SESSION_KEY = "jaffery-glyph-intro-v1";
 const debugMode = import.meta.env.DEV && new URLSearchParams(location.search).get("introDebug") === "1";
 let root: Root | null = null;
@@ -40,10 +41,11 @@ const globalWindow = window as typeof window & { __jafferyFinishIntro?: (focus?:
 globalWindow.__jafferyFinishIntro = (focus = false) => revealSite(focus, true);
 
 const introRoot = document.getElementById(ROOT_ID);
+const reactMount = document.getElementById(REACT_ROOT_ID);
 if (debugMode && introRoot && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
   document.documentElement.setAttribute("data-glyph-intro", "pending");
 }
-const introPending = !!introRoot && document.documentElement.dataset.glyphIntro === "pending";
+const introPending = !!introRoot && !!reactMount && document.documentElement.dataset.glyphIntro === "pending";
 if (introPending && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
   // Initialization failure is recoverable and does not consume the tab's first visit.
   if (!debugMode) fallbackTimer = window.setTimeout(() => revealSite(false, false), 6500);
@@ -55,13 +57,11 @@ if (introPending && !window.matchMedia("(prefers-reduced-motion: reduce)").match
         new Promise<boolean>((resolve) => window.setTimeout(() => resolve(false), 900)),
       ]);
     } catch { /* keep the measured local sans-serif fallback */ }
-    if (finished || !introRoot.isConnected) return;
+    if (finished || !introRoot.isConnected || !reactMount.isConnected) return;
     const measuredFont = preferredFontLoaded ? '"DM Sans", Arial, sans-serif' : "Arial, Helvetica, sans-serif";
     if (!preferredFontLoaded) introRoot.dataset.glyphFont = "fallback";
     const { default: GlyphPortal } = await import("../components/ui/glyph-portal");
-    if (finished || !introRoot.isConnected) return;
-    const finishSkip = () => revealSite(true, true);
-    const skip = <button className="intro-skip" type="button" data-gp-skip onClick={finishSkip}>Skip intro</button>;
+    if (finished || !introRoot.isConnected || !reactMount.isConnected) return;
     const debugControls = debugMode ? (
       <nav className="intro-debug" aria-label="Glyph intro progress inspection">
         <span>Debug · progress</span>
@@ -77,24 +77,33 @@ if (introPending && !window.matchMedia("(prefers-reduced-motion: reduce)").match
       autoDuration: 3200,
       debugMode,
       portalReveal: true,
+      showForegroundGlyph: true,
       focusChar: "A",
       fontFamily: measuredFont,
       fontWeight: 900,
       word: "JAFFERY",
       className: "glyph-portal-intro",
-      front: <h1 className="intro-word" style={{ fontFamily: measuredFont, fontWeight: 900 }} aria-hidden="true">JAFFERY</h1>,
       background: <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: "transparent" }} />,
       style: { "--gp-paper": "#FAF8F2", "--gp-ink": "#103B35", "--gp-field": "transparent", "--gp-foreground": "#103B35" },
       onComplete: () => revealSite(false, true),
       onFailure: () => revealSite(false, false),
       onProgress: (progress) => {
-        if (progress <= 0.005) introRoot.dataset.glyphActive = "true";
+        if (progress <= 0.005 && introRoot.dataset.glyphActive !== "true") {
+          const posterWord = introRoot.querySelector<HTMLElement>(".intro-poster-word");
+          const scale = Number(reactMount.querySelector<HTMLElement>(".glyph-portal-intro")?.dataset.gpScale);
+          if (posterWord && Number.isFinite(scale) && scale > 0) {
+            posterWord.style.fontSize = `${scale * 100}px`;
+            posterWord.style.letterSpacing = "0";
+          }
+          introRoot.dataset.glyphActive = "true";
+          introRoot.querySelector(".intro-poster")?.remove();
+        }
         if (progress >= 0.94) introRoot.style.pointerEvents = "none";
         else introRoot.style.pointerEvents = "auto";
       },
     };
-    root = createRoot(introRoot);
-    root.render(<><GlyphPortal {...portalProps} />{skip}{debugControls}</>);
+    root = createRoot(reactMount);
+    root.render(<><GlyphPortal {...portalProps} />{debugControls}</>);
   };
   void show().catch(() => revealSite(false, false));
 } else if (introPending) {

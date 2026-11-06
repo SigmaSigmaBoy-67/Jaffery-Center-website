@@ -44,6 +44,8 @@ export type GlyphPortalProps = {
   onFailure?: () => void;
   /** Use an inverse SVG mask to reveal the real DOM behind the glyph. */
   portalReveal?: boolean;
+  /** Paint one visible SVG word using the same measured camera transform as the reveal mask. */
+  showForegroundGlyph?: boolean;
   /** Called on progress frames without React state updates. */
   onProgress?: (progress: number) => void;
 };
@@ -103,7 +105,7 @@ export default function GlyphPortal({
   word = "JAFFERY", focusChar, interactive = true, background, front, children,
   scrollLength = 2.4, fontFamily = DEFAULT_FONT, fontWeight = 900,
   annotations = false, enterLabel = "Enter section", className, style,
-  autoPlay = false, autoDuration = 3100, debugMode = false, onComplete, onFailure, portalReveal = false, onProgress,
+  autoPlay = false, autoDuration = 3100, debugMode = false, onComplete, onFailure, portalReveal = false, showForegroundGlyph = false, onProgress,
 }: GlyphPortalProps) {
   const uid = `gp-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const clipId = `${uid}-clip`;
@@ -124,7 +126,7 @@ export default function GlyphPortal({
   const length = Number.isFinite(scrollLength) ? clamp(scrollLength, 1, 8) : 2.4;
   const duration = Number.isFinite(autoDuration) ? Math.max(700, autoDuration) : 3100;
   const weight = Number.isFinite(fontWeight) ? clamp(fontWeight, 1, 1000) : 900;
-  const hasFront = front != null;
+  const hasFront = front != null || showForegroundGlyph;
   const q = `:where(#${uid})`;
 
   useLayoutEffect(() => {
@@ -133,6 +135,7 @@ export default function GlyphPortal({
     const pin = section.querySelector<HTMLElement>("[data-gp-pin]");
     const field = section.querySelector<HTMLElement>("[data-gp-field]");
     const cover = section.querySelector<SVGRectElement>("[data-gp-cover]");
+    const foregroundGlyph = section.querySelector<SVGTextElement>("[data-gp-foreground-glyph]");
     const art = section.querySelector<SVGSVGElement>("[data-gp-art]");
     const clip = section.querySelector<SVGClipPathElement>(`#${clipId}`);
     const glyph = section.querySelector<SVGTextElement>("[data-gp-glyph]");
@@ -182,7 +185,7 @@ export default function GlyphPortal({
     } catch { glyph.style.fontFamily = DEFAULT_FONT; }
     if (maskGlyph) maskGlyph.style.fontFamily = glyph.style.fontFamily;
 
-    if (!context || !pin || !field || !art || !clip || !glyph || !marks || (portalReveal && (!mask || !maskGlyph || !maskCamera || !cover || !exitAperture))) {
+    if (!context || !pin || !field || !art || !clip || !glyph || !marks || (portalReveal && (!mask || !maskGlyph || !maskCamera || !cover || !exitAperture)) || (showForegroundGlyph && !foregroundGlyph)) {
       fail();
       return;
     }
@@ -271,7 +274,8 @@ export default function GlyphPortal({
       const cy = center.y + ((target?.y ?? center.y) - center.y) * blend;
       const roll = -4 * smooth(0.06, 0.5, t) * (1 - smooth(0.62, 0.92, t));
       const tx = W / 2;
-      const ty = H * 0.46 + H * 0.04 * eased;
+      const slideIn = autoPlay ? 52 * (1 - smooth(0, 0.21875, timeline)) : 0;
+      const ty = H * 0.46 + slideIn + H * 0.04 * eased;
       const transform = `translate(${tx} ${ty}) scale(${scale}) rotate(${roll}) translate(${-cx} ${-cy})`;
       const radians = roll * Math.PI / 180;
       const dx = tx / scale, dy = ty / scale;
@@ -283,6 +287,10 @@ export default function GlyphPortal({
       // the split clip/text transforms above are composed into this one transform.
       if (maskCamera) maskCamera.setAttribute("transform", transform);
       if (maskGlyph) maskGlyph.removeAttribute("transform");
+      if (foregroundGlyph) {
+        foregroundGlyph.setAttribute("transform", transform);
+        foregroundGlyph.style.opacity = String(autoPlay ? 1 - smooth(0.015, 0.17, p) : 1);
+      }
       marks.setAttribute("transform", transform);
       marks.style.opacity = String(1 - smooth(0.015, 0.17, p));
       choosing = interactive && !autoPlay && !staticMode && p < 0.04;
@@ -432,7 +440,7 @@ export default function GlyphPortal({
       choices.removeEventListener("keydown", navigate);
       picker.removeEventListener("change", pick);
     };
-  }, [text, focusChar, interactive, fontFamily, weight, length, clipId, maskId, hasFront, autoPlay, duration, debugMode, portalReveal]);
+  }, [text, focusChar, interactive, fontFamily, weight, length, clipId, maskId, hasFront, autoPlay, duration, debugMode, portalReveal, showForegroundGlyph]);
 
   return (
     <section ref={sectionRef} id={uid} className={className} aria-hidden={portalReveal ? true : undefined}
@@ -446,6 +454,7 @@ export default function GlyphPortal({
         ${q} [data-gp-field]{position:absolute;inset:0;background:var(--gp-field);opacity:0;pointer-events:none;}
         ${q}[data-gp-ready] [data-gp-field]{opacity:1;}
         ${q} [data-gp-art]{position:absolute;inset:0;z-index:3;width:100%;height:100%;overflow:visible;pointer-events:none;}
+        ${q} [data-gp-foreground-glyph]{fill:var(--gp-ink);pointer-events:none;}
         ${q} [data-gp-marks]{fill:none;stroke:var(--gp-ink);opacity:.6;}
         ${q} [data-gp-choices]{position:absolute;inset:0;visibility:hidden;pointer-events:none;}
         ${q}[data-gp-choosing=true] [data-gp-choices]{visibility:visible;}
@@ -502,6 +511,7 @@ export default function GlyphPortal({
             </mask>}
           </defs>
           {portalReveal && <rect data-gp-cover x="0" y="0" width="1" height="1" fill="#FAF8F2" mask={`url(#${maskId})`} />}
+          {showForegroundGlyph && <text data-gp-foreground-glyph x="0" y="0" fill="var(--gp-ink)" style={{ fontFamily, fontWeight: weight, fontSize: 100, fontKerning: "none", fontVariantLigatures: "none", letterSpacing: 0 }}>{text}</text>}
           <g data-gp-marks style={{ visibility: annotations ? "visible" : "hidden" }}><path /></g>
         </svg>
         <div data-gp-choices role="radiogroup" aria-label="Choose the letter to enter through" inert>

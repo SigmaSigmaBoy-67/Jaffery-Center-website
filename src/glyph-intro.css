@@ -16,6 +16,8 @@ html[data-glyph-intro="pending"] #glyph-intro-root {
   pointer-events: auto;
 }
 html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { background: transparent; }
+#glyph-intro-root #glyph-intro-react-root { position: absolute; inset: 0; visibility: hidden; }
+#glyph-intro-root[data-glyph-active="true"] #glyph-intro-react-root { visibility: visible; }
 #glyph-intro-root .intro-poster {
   position: absolute;
   inset: 0;
@@ -23,20 +25,18 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
   place-items: center;
   background: #FAF8F2;
 }
-#glyph-intro-root .intro-poster-word,
-#glyph-intro-root .intro-word {
+#glyph-intro-root .intro-poster-word {
   margin: 0;
   color: #103B35;
   font-family: "DM Sans", Arial, sans-serif;
   font-size: min(17vw, 220px);
   font-weight: 900;
   line-height: .88;
-  letter-spacing: -.065em;
+  letter-spacing: 0;
   white-space: nowrap;
 }
-#glyph-intro-root[data-glyph-font="fallback"] .intro-poster-word,
-#glyph-intro-root[data-glyph-font="fallback"] .intro-word { font-family: Arial, Helvetica, sans-serif !important; }
-#glyph-intro-root .intro-poster-word { animation: none; }
+#glyph-intro-root[data-glyph-font="fallback"] .intro-poster-word { font-family: Arial, Helvetica, sans-serif !important; }
+#glyph-intro-root .intro-poster-word { animation: none; transform: translateY(calc(52px - 4vh)); }
 #glyph-intro-root .glyph-portal-intro {
   position: absolute;
   inset: 0;
@@ -73,7 +73,6 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
   display: grid;
   place-items: center;
 }
-#glyph-intro-root .intro-word { animation: glyph-title-in 680ms cubic-bezier(.2,.75,.24,1) both; }
 #glyph-intro-root .intro-skip {
   pointer-events: auto;
   position: absolute;
@@ -95,11 +94,6 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
 }
 #glyph-intro-root .intro-skip:hover { background: #fffdf8; border-color: rgba(16,59,53,.42); transform: translateY(-1px); }
 #glyph-intro-root .intro-skip:focus-visible { outline: 3px solid #9a7746; outline-offset: 4px; }
-@keyframes glyph-title-in {
-  from { opacity: 1; transform: translateY(calc(-4vh + 52px)); }
-  82% { opacity: 1; transform: translateY(calc(-4vh - 1px)); }
-  to { opacity: 1; transform: translateY(-4vh); }
-}
 #glyph-intro-root .intro-debug {
   position: absolute;
   z-index: 1020;
@@ -132,8 +126,7 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
 #glyph-intro-root .intro-debug button:hover,
 #glyph-intro-root .intro-debug button:focus-visible { border-color: #9a7746; outline: 2px solid #9a7746; outline-offset: 2px; }
 @media (max-width: 600px) {
-  #glyph-intro-root .intro-poster-word,
-  #glyph-intro-root .intro-word { font-size: min(17vw, 16vh, 82px); letter-spacing: -.055em; }
+  #glyph-intro-root .intro-poster-word { font-size: min(17vw, 16vh, 82px); }
   #glyph-intro-root .intro-skip { top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); }
 }
 @media (max-width: 480px) {
@@ -142,6 +135,6 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
   #glyph-intro-root .intro-debug button { min-width: 0; min-height: 34px; padding: 0 3px; font-size: 10px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  #glyph-intro-root .intro-poster-word, #glyph-intro-root .intro-word { animation: none; opacity: 1; transform: none; }
+  #glyph-intro-root .intro-poster-word { animation: none; }
   #glyph-intro-root .intro-skip { transition: none; }
 }

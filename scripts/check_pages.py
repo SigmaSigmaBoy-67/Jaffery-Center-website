@@ -70,6 +70,10 @@ for name in PAGES:
         assert 'sessionStorage.setItem(k,"done")' in text and '"started"' not in text
         assert 'import.meta.env.DEV' in INTRO_SOURCE and 'introDebug' in INTRO_SOURCE
         assert 'className: "glyph-portal-intro"' in INTRO_SOURCE
+        assert 'showForegroundGlyph: true' in INTRO_SOURCE and 'front: <h1' not in INTRO_SOURCE
+        assert 'glyph-intro-react-root' in text
+        assert 'data-gp-foreground-glyph' in PORTAL_SOURCE
+        assert 'foregroundGlyph.setAttribute("transform", transform)' in PORTAL_SOURCE
         assert 'maskCamera.setAttribute("transform", transform)' in PORTAL_SOURCE
         assert 'data-gp-exit-aperture' in PORTAL_SOURCE and 'data-gp-cover' in PORTAL_SOURCE
         assert '[0, 25, 50, 75, 90, 100]' in INTRO_SOURCE
