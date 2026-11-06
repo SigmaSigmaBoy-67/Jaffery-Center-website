@@ -5,6 +5,8 @@ import json
 
 ROOT = Path(__file__).resolve().parent.parent
 PAGES = ('index', 'about', 'programs', 'sunday-school', 'visit', 'donate')
+INTRO_SOURCE = (ROOT / 'src/glyph-intro-entry.tsx').read_text(encoding='utf-8')
+PORTAL_SOURCE = (ROOT / 'components/ui/glyph-portal.tsx').read_text(encoding='utf-8')
 
 
 class Page(HTMLParser):
@@ -65,6 +67,12 @@ for name in PAGES:
         assert 'glyph-intro-root' in page.ids and '/src/glyph-intro-entry.tsx' in text
         assert 'jaffery-glyph-intro-v1' in text and 'prefers-reduced-motion: reduce' in text
         assert 'data-gp-skip' in text and '#FAF8F2' in text
+        assert 'sessionStorage.setItem(k,"done")' in text and '"started"' not in text
+        assert 'import.meta.env.DEV' in INTRO_SOURCE and 'introDebug' in INTRO_SOURCE
+        assert 'className: "glyph-portal-intro"' in INTRO_SOURCE
+        assert 'maskCamera.setAttribute("transform", transform)' in PORTAL_SOURCE
+        assert 'data-gp-exit-aperture' in PORTAL_SOURCE and 'data-gp-cover' in PORTAL_SOURCE
+        assert '[0, 25, 50, 75, 90, 100]' in INTRO_SOURCE
     else:
         assert 'glyph-intro-root' not in page.ids and 'glyph-intro-entry.tsx' not in text, name
     assert '/src/footer-entry.tsx' in text and page.footer_config, name

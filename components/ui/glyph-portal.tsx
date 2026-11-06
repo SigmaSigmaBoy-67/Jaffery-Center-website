@@ -34,10 +34,14 @@ export type GlyphPortalProps = {
   style?: GlyphPortalStyle;
   /** Optional time-based playback. Does not read or change document scroll. */
   autoPlay?: boolean;
+  /** Freeze auto playback and accept glyph-portal-debug progress events (development inspection). */
+  debugMode?: boolean;
   /** Duration of the automatic timeline, in milliseconds. */
   autoDuration?: number;
-  /** Called once after successful playback or when the animation cannot initialize. */
+  /** Called once after successful playback. */
   onComplete?: () => void;
+  /** Called once if initialization genuinely fails; caller should reveal the site without recording success. */
+  onFailure?: () => void;
   /** Use an inverse SVG mask to reveal the real DOM behind the glyph. */
   portalReveal?: boolean;
   /** Called on progress frames without React state updates. */
@@ -99,7 +103,7 @@ export default function GlyphPortal({
   word = "JAFFERY", focusChar, interactive = true, background, front, children,
   scrollLength = 2.4, fontFamily = DEFAULT_FONT, fontWeight = 900,
   annotations = false, enterLabel = "Enter section", className, style,
-  autoPlay = false, autoDuration = 3100, onComplete, portalReveal = false, onProgress,
+  autoPlay = false, autoDuration = 3100, debugMode = false, onComplete, onFailure, portalReveal = false, onProgress,
 }: GlyphPortalProps) {
   const uid = `gp-${useId().replace(/[^a-zA-Z0-9]/g, "")}`;
   const clipId = `${uid}-clip`;
@@ -107,8 +111,10 @@ export default function GlyphPortal({
   const sectionRef = useRef<HTMLElement>(null);
   const progressRef = useRef(onProgress);
   const completeRef = useRef(onComplete);
+  const failureRef = useRef(onFailure);
   useLayoutEffect(() => { progressRef.current = onProgress; }, [onProgress]);
   useLayoutEffect(() => { completeRef.current = onComplete; }, [onComplete]);
+  useLayoutEffect(() => { failureRef.current = onFailure; }, [onFailure]);
   const text = word.trim().normalize("NFC") || "JAFFERY";
   let offset = 0;
   const characters = Array.from(text, char => {
@@ -126,25 +132,30 @@ export default function GlyphPortal({
     if (!section) return;
     const pin = section.querySelector<HTMLElement>("[data-gp-pin]");
     const field = section.querySelector<HTMLElement>("[data-gp-field]");
-    const veil = section.querySelector<HTMLElement>("[data-gp-veil]");
+    const cover = section.querySelector<SVGRectElement>("[data-gp-cover]");
     const art = section.querySelector<SVGSVGElement>("[data-gp-art]");
     const clip = section.querySelector<SVGClipPathElement>(`#${clipId}`);
     const glyph = section.querySelector<SVGTextElement>("[data-gp-glyph]");
     const mask = section.querySelector<SVGMaskElement>(`#${maskId}`);
     const maskRect = section.querySelector<SVGRectElement>("[data-gp-mask-bg]");
     const maskGlyph = section.querySelector<SVGTextElement>("[data-gp-mask-glyph]");
+    const maskCamera = section.querySelector<SVGGElement>("[data-gp-mask-camera]");
+    const exitAperture = section.querySelector<SVGCircleElement>("[data-gp-exit-aperture]");
     const marks = section.querySelector<SVGGElement>("[data-gp-marks]");
     const choices = section.querySelector<HTMLElement>("[data-gp-choices]");
     const picker = section.querySelector<HTMLSelectElement>("[data-gp-select]");
-    if (!pin || !field || !art || !clip || !glyph || !marks || !choices || !picker) return;
+    if (!pin || !field || !art || !clip || !glyph || !marks || !choices || !picker) {
+      if (autoPlay) failureRef.current?.();
+      return;
+    }
     const buttons = Array.from(choices.querySelectorAll<HTMLButtonElement>("button"));
     const root = scrollParent(section);
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d", { willReadFrequently: true });
     let disposed = false, raf = 0, dirty = true, active = true, ready = false;
-    let browserFrameSeen = false, stalled = false, completed = false;
-    const mountedAt = performance.now();
+    let browserFrameSeen = false, completed = false, failed = false;
+    let debugProgress: number | null = debugMode ? 0 : null;
     let W = 1, H = 1, travel = 1, startScale = 1, endScale = 1;
     let center = { x: 0, y: 0 }, target: Ink | null = null;
     let lastProgress = -1, autoProgress = 0, autoStartedAt = 0;
@@ -153,30 +164,25 @@ export default function GlyphPortal({
     let bounds = { x: 0, y: 0, width: 1, height: 1 };
     let fontDirty = true;
     const complete = () => {
-      if (completed) return;
+      if (completed || failed) return;
       completed = true;
       completeRef.current?.();
     };
-    const fail = () => { if (autoPlay) complete(); };
+    const fail = () => {
+      if (failed || completed) return;
+      failed = true;
+      if (autoPlay) failureRef.current?.();
+    };
 
-    // Freeze the supplied face for this mount; the page preloads DM Sans before
-    // mounting so there is no mid-flight font swap beneath the measured mask.
+    // Font loading is gated by the entry module. Measure the exact family that
+    // the SVG will render; use Arial only when the requested face truly failed.
     glyph.style.fontFamily = fontFamily;
-    const computedFamily = getComputedStyle(glyph).fontFamily;
-    const families = computedFamily.match(/(?:[^,"']+|"[^"]*"|'[^']*')+/g) ?? [];
-    const available = families.filter(family => {
-      try { return document.fonts.check(`${weight} 100px ${family.trim()}`, text); }
-      catch { return false; }
-    });
-    glyph.style.fontFamily = [...available, DEFAULT_FONT].join(",");
+    try {
+      if (!document.fonts.check(`${weight} 100px ${fontFamily}`, text)) glyph.style.fontFamily = DEFAULT_FONT;
+    } catch { glyph.style.fontFamily = DEFAULT_FONT; }
     if (maskGlyph) maskGlyph.style.fontFamily = glyph.style.fontFamily;
-    stalled = available.length < families.length;
 
-    if (!context || !pin || !field || !art || !clip || !glyph || !marks) {
-      fail();
-      return;
-    }
-    if (portalReveal && !CSS.supports("mask-image", `url(#${maskId})`) && !CSS.supports("-webkit-mask-image", `url(#${maskId})`)) {
+    if (!context || !pin || !field || !art || !clip || !glyph || !marks || (portalReveal && (!mask || !maskGlyph || !maskCamera || !cover || !exitAperture))) {
       fail();
       return;
     }
@@ -221,7 +227,8 @@ export default function GlyphPortal({
 
     const select = (next: Ink | null) => {
       target = next;
-      endScale = target ? Math.max(startScale, Math.hypot(W, H) / (target.radius * 1.35)) : startScale;
+      const measuredEndScale = target ? Math.hypot(W, H) / (target.radius * 1.35) : startScale;
+      endScale = target ? Math.max(startScale, autoPlay ? Math.min(measuredEndScale, 48) : measuredEndScale) : startScale;
       section.dataset.gpFocus = target ? Array.from(text.slice(target.index))[0] : "";
       section.dataset.gpFocusIndex = String(target?.index ?? -1);
       for (const button of buttons) {
@@ -251,12 +258,12 @@ export default function GlyphPortal({
     const currentProgress = () => autoPlay ? autoProgress : position();
 
     const paint = (progress: number) => {
-      const staticMode = motion.matches || !browserFrameSeen || stalled || !target;
+      const staticMode = motion.matches || !browserFrameSeen || !target;
       const timeline = staticMode ? 0 : progress;
       // Keep the title/hold in the first ~29%; then run the original camera path
       // across the measured character, without reading or writing scroll state.
-      const p = autoPlay ? clamp((timeline - 0.285) / 0.63) : timeline;
-      const t = clamp(p / 0.78);
+      const p = autoPlay ? clamp((timeline - 0.3125) / 0.6875) : timeline;
+      const t = autoPlay ? p : clamp(p / 0.78);
       const eased = t < 0.5 ? 4 * t ** 3 : 1 - (-2 * t + 2) ** 3 / 2;
       const scale = Math.exp(Math.log(startScale) + Math.log(endScale / startScale) * eased);
       const blend = endScale === startScale ? 0 : (1 / scale - 1 / startScale) / (1 / endScale - 1 / startScale);
@@ -268,9 +275,14 @@ export default function GlyphPortal({
       const transform = `translate(${tx} ${ty}) scale(${scale}) rotate(${roll}) translate(${-cx} ${-cy})`;
       const radians = roll * Math.PI / 180;
       const dx = tx / scale, dy = ty / scale;
-      clip.setAttribute("transform", `scale(${scale}) rotate(${roll})`);
-      glyph.setAttribute("transform", `translate(${Math.cos(radians) * dx + Math.sin(radians) * dy - cx} ${-Math.sin(radians) * dx + Math.cos(radians) * dy - cy})`);
-      if (maskGlyph) maskGlyph.setAttribute("transform", glyph.getAttribute("transform") ?? "");
+      const cameraTransform = `scale(${scale}) rotate(${roll})`;
+      clip.setAttribute("transform", cameraTransform);
+      const glyphTranslation = `translate(${Math.cos(radians) * dx + Math.sin(radians) * dy - cx} ${-Math.sin(radians) * dx + Math.cos(radians) * dy - cy})`;
+      glyph.setAttribute("transform", glyphTranslation);
+      // The mask consumes the exact full camera matrix used by the annotations;
+      // the split clip/text transforms above are composed into this one transform.
+      if (maskCamera) maskCamera.setAttribute("transform", transform);
+      if (maskGlyph) maskGlyph.removeAttribute("transform");
       marks.setAttribute("transform", transform);
       marks.style.opacity = String(1 - smooth(0.015, 0.17, p));
       choosing = interactive && !autoPlay && !staticMode && p < 0.04;
@@ -281,15 +293,18 @@ export default function GlyphPortal({
       section.style.setProperty("--gp-reveal", String(staticMode ? 1 : smooth(0.78, 0.9, p)));
       section.style.setProperty("--gp-field-scale", String(1 + 0.16 * smooth(0, 0.82, p)));
       section.dataset.gpEntered = String(p >= 0.9);
-      section.dataset.gpProgress = p.toFixed(5);
-      if (portalReveal && veil && maskGlyph) {
-        maskGlyph.style.opacity = String(smooth(0.02, 0.74, p));
-        veil.style.opacity = String(1 - smooth(0.79, 0.97, p));
-        section.style.pointerEvents = p >= 0.94 ? "none" : "auto";
+      section.dataset.gpProgress = timeline.toFixed(5);
+      section.dataset.gpCameraProgress = p.toFixed(5);
+      section.dataset.gpScale = scale.toFixed(3);
+      if (exitAperture) {
+        exitAperture.setAttribute("cx", String(tx));
+        exitAperture.setAttribute("cy", String(ty));
+        exitAperture.setAttribute("r", String(autoPlay ? Math.hypot(W, H) * 0.55 * smooth(0.7, 0.99, p) : 0));
       }
+      if (portalReveal) section.style.pointerEvents = timeline >= 0.94 ? "none" : "auto";
       if (progress !== lastProgress) {
         lastProgress = progress;
-        progressRef.current?.(progress);
+        progressRef.current?.(timeline);
       }
     };
 
@@ -308,6 +323,7 @@ export default function GlyphPortal({
         mask.setAttribute("width", String(W)); mask.setAttribute("height", String(H));
       }
       if (maskRect) { maskRect.setAttribute("width", String(W)); maskRect.setAttribute("height", String(H)); }
+      if (cover) { cover.setAttribute("width", String(W)); cover.setAttribute("height", String(H)); }
       if (fontDirty) { ready = readInk(); fontDirty = false; }
       if (!ready || !target) { fail(); return; }
       const wordHeight = hasFront && H < 480 ? Math.min(H * 0.38, Math.max(24, H - 264)) : H * 0.38;
@@ -326,25 +342,18 @@ export default function GlyphPortal({
       section.style.setProperty("--gp-word-top", `${H * 0.46 - bounds.height * startScale / 2}px`);
       section.style.setProperty("--gp-word-bottom", `${H * 0.46 + bounds.height * startScale / 2}px`);
       section.dataset.gpReady = "true";
-      section.dataset.gpMotion = !motion.matches && browserFrameSeen && !stalled && target ? "on" : "off";
+      section.dataset.gpMotion = !motion.matches && browserFrameSeen && target ? "on" : "off";
     };
 
     const frame = (time?: number) => {
       raf = 0;
       if (disposed) return;
       const now = time ?? performance.now();
-      if (time !== undefined && !browserFrameSeen) {
-        browserFrameSeen = true;
-        stalled ||= now - mountedAt > 2400;
-        dirty = true;
-      }
+      if (!browserFrameSeen) { browserFrameSeen = true; dirty = true; }
       if (dirty) { dirty = false; layout(); }
-      if (!ready || stalled || motion.matches || !target) {
-        paint(0);
-        if (autoPlay) complete();
-        return;
-      }
+      if (!ready || motion.matches || !target) { fail(); return; }
       if (autoPlay) {
+        if (debugProgress !== null) { autoProgress = debugProgress; paint(autoProgress); return; }
         if (!autoStartedAt) autoStartedAt = now;
         autoProgress = clamp((now - autoStartedAt) / duration);
         paint(autoProgress);
@@ -355,11 +364,20 @@ export default function GlyphPortal({
       paint(position());
     };
     const schedule = () => { if (!raf && active) raf = requestAnimationFrame(frame); };
-    const resize = () => {
-      cancelAnimationFrame(raf); raf = 0; dirty = true;
-      if (autoPlay) frame(); else frame();
-    };
+    const resize = () => { cancelAnimationFrame(raf); raf = 0; dirty = true; schedule(); };
     const scroll = () => { if (!autoPlay) schedule(); };
+    const inspectProgress = (event: Event) => {
+      if (!debugMode) return;
+      const value = Number((event as CustomEvent<number>).detail);
+      if (!Number.isFinite(value)) return;
+      debugProgress = clamp(value);
+      browserFrameSeen = true;
+      autoProgress = debugProgress;
+      autoStartedAt = 0;
+      cancelAnimationFrame(raf); raf = 0;
+      if (ready) paint(autoProgress); else { dirty = true; schedule(); }
+    };
+    window.addEventListener("glyph-portal-debug", inspectProgress);
     const choose = (event: Event) => {
       if (!choosing || currentProgress() >= 0.04) return;
       const button = (event.target as Element).closest<HTMLButtonElement>("[data-gp-letter]");
@@ -398,7 +416,6 @@ export default function GlyphPortal({
     window.addEventListener("resize", resize);
     window.visualViewport?.addEventListener("resize", resize);
     motion.addEventListener("change", resize);
-    frame();
     schedule();
     return () => {
       disposed = true;
@@ -408,13 +425,14 @@ export default function GlyphPortal({
       window.removeEventListener("resize", resize);
       window.visualViewport?.removeEventListener("resize", resize);
       motion.removeEventListener("change", resize);
+      window.removeEventListener("glyph-portal-debug", inspectProgress);
       choices.removeEventListener("pointerover", choose);
       choices.removeEventListener("click", choose);
       choices.removeEventListener("focusin", choose);
       choices.removeEventListener("keydown", navigate);
       picker.removeEventListener("change", pick);
     };
-  }, [text, focusChar, interactive, fontFamily, weight, length, clipId, maskId, hasFront, autoPlay, duration, portalReveal]);
+  }, [text, focusChar, interactive, fontFamily, weight, length, clipId, maskId, hasFront, autoPlay, duration, debugMode, portalReveal]);
 
   return (
     <section ref={sectionRef} id={uid} className={className} aria-hidden={portalReveal ? true : undefined}
@@ -427,7 +445,6 @@ export default function GlyphPortal({
         ${q} [data-gp-pin]{position:relative;height:var(--gp-height,100svh);overflow:clip;isolation:isolate;container-type:size;}
         ${q} [data-gp-field]{position:absolute;inset:0;background:var(--gp-field);opacity:0;pointer-events:none;}
         ${q}[data-gp-ready] [data-gp-field]{opacity:1;}
-        ${q} [data-gp-veil]{position:absolute;inset:0;z-index:2;background:var(--gp-paper);opacity:1;pointer-events:none;-webkit-mask-image:url(#${maskId});mask-image:url(#${maskId});-webkit-mask-repeat:no-repeat;mask-repeat:no-repeat;-webkit-mask-size:100% 100%;mask-size:100% 100%;}
         ${q} [data-gp-art]{position:absolute;inset:0;z-index:3;width:100%;height:100%;overflow:visible;pointer-events:none;}
         ${q} [data-gp-marks]{fill:none;stroke:var(--gp-ink);opacity:.6;}
         ${q} [data-gp-choices]{position:absolute;inset:0;visibility:hidden;pointer-events:none;}
@@ -473,7 +490,6 @@ export default function GlyphPortal({
         <div data-gp-field aria-hidden="true" inert>
           {background ?? <div data-gp-default-field style={{ position: "absolute", inset: 0, transform: "scale(var(--gp-field-scale,1))", background: "radial-gradient(circle at 18% 8%, rgba(68,125,98,.72), transparent 34%), radial-gradient(circle at 82% 20%, rgba(251,251,250,.12), transparent 28%), radial-gradient(circle at 48% 78%, rgba(9,48,35,.5), transparent 44%), linear-gradient(135deg,#0b3b2a 0%,#14573f 48%,#082d22 100%)" }} />}
         </div>
-        {portalReveal && <div data-gp-veil aria-hidden="true" />}
         <svg data-gp-art aria-hidden="true" focusable="false">
           <defs>
             <clipPath id={clipId} clipPathUnits="userSpaceOnUse">
@@ -481,9 +497,11 @@ export default function GlyphPortal({
             </clipPath>
             {portalReveal && <mask id={maskId} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" mask-type="luminance" x="0" y="0" width="1" height="1">
               <rect data-gp-mask-bg x="0" y="0" width="1" height="1" fill="white" />
-              <text data-gp-mask-glyph x="0" y="0" fill="black" style={{ fontFamily, fontWeight: weight, fontSize: 100, fontKerning: "none", fontVariantLigatures: "none", letterSpacing: 0 }}>{text}</text>
+              <g data-gp-mask-camera><text data-gp-mask-glyph x="0" y="0" fill="black" style={{ fontFamily, fontWeight: weight, fontSize: 100, fontKerning: "none", fontVariantLigatures: "none", letterSpacing: 0 }}>{text}</text></g>
+              <circle data-gp-exit-aperture cx="0" cy="0" r="0" fill="black" />
             </mask>}
           </defs>
+          {portalReveal && <rect data-gp-cover x="0" y="0" width="1" height="1" fill="#FAF8F2" mask={`url(#${maskId})`} />}
           <g data-gp-marks style={{ visibility: annotations ? "visible" : "hidden" }}><path /></g>
         </svg>
         <div data-gp-choices role="radiogroup" aria-label="Choose the letter to enter through" inert>
