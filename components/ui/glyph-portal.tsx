@@ -143,7 +143,6 @@ export default function GlyphPortal({
     const maskRect = section.querySelector<SVGRectElement>("[data-gp-mask-bg]");
     const maskGlyph = section.querySelector<SVGTextElement>("[data-gp-mask-glyph]");
     const maskCamera = section.querySelector<SVGGElement>("[data-gp-mask-camera]");
-    const exitAperture = section.querySelector<SVGCircleElement>("[data-gp-exit-aperture]");
     const marks = section.querySelector<SVGGElement>("[data-gp-marks]");
     const choices = section.querySelector<HTMLElement>("[data-gp-choices]");
     const picker = section.querySelector<HTMLSelectElement>("[data-gp-select]");
@@ -185,7 +184,7 @@ export default function GlyphPortal({
     } catch { glyph.style.fontFamily = DEFAULT_FONT; }
     if (maskGlyph) maskGlyph.style.fontFamily = glyph.style.fontFamily;
 
-    if (!context || !pin || !field || !art || !clip || !glyph || !marks || (portalReveal && (!mask || !maskGlyph || !maskCamera || !cover || !exitAperture)) || (showForegroundGlyph && !foregroundGlyph)) {
+    if (!context || !pin || !field || !art || !clip || !glyph || !marks || (portalReveal && (!mask || !maskGlyph || !maskCamera || !cover)) || (showForegroundGlyph && !foregroundGlyph)) {
       fail();
       return;
     }
@@ -230,8 +229,10 @@ export default function GlyphPortal({
 
     const select = (next: Ink | null) => {
       target = next;
-      const measuredEndScale = target ? Math.hypot(W, H) / (target.radius * 1.35) : startScale;
-      endScale = target ? Math.max(startScale, autoPlay ? Math.min(measuredEndScale, 48) : measuredEndScale) : startScale;
+      // Finish as soon as the measured patch of solid glyph ink can cover the viewport.
+      // Going farther carries the glyph past the screen and needs a separate wipe to reveal the page.
+      const measuredEndScale = target ? Math.max(W, H) / (target.radius * 2) * 1.15 : startScale;
+      endScale = target ? Math.max(startScale, measuredEndScale) : startScale;
       section.dataset.gpFocus = target ? Array.from(text.slice(target.index))[0] : "";
       section.dataset.gpFocusIndex = String(target?.index ?? -1);
       for (const button of buttons) {
@@ -304,11 +305,6 @@ export default function GlyphPortal({
       section.dataset.gpProgress = timeline.toFixed(5);
       section.dataset.gpCameraProgress = p.toFixed(5);
       section.dataset.gpScale = scale.toFixed(3);
-      if (exitAperture) {
-        exitAperture.setAttribute("cx", String(tx));
-        exitAperture.setAttribute("cy", String(ty));
-        exitAperture.setAttribute("r", String(autoPlay ? Math.hypot(W, H) * 0.55 * smooth(0.7, 0.99, p) : 0));
-      }
       if (portalReveal) section.style.pointerEvents = timeline >= 0.94 ? "none" : "auto";
       if (progress !== lastProgress) {
         lastProgress = progress;
@@ -507,7 +503,6 @@ export default function GlyphPortal({
             {portalReveal && <mask id={maskId} maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" mask-type="luminance" x="0" y="0" width="1" height="1">
               <rect data-gp-mask-bg x="0" y="0" width="1" height="1" fill="white" />
               <g data-gp-mask-camera><text data-gp-mask-glyph x="0" y="0" fill="black" style={{ fontFamily, fontWeight: weight, fontSize: 100, fontKerning: "none", fontVariantLigatures: "none", letterSpacing: 0 }}>{text}</text></g>
-              <circle data-gp-exit-aperture cx="0" cy="0" r="0" fill="black" />
             </mask>}
           </defs>
           {portalReveal && <rect data-gp-cover x="0" y="0" width="1" height="1" fill="#FAF8F2" mask={`url(#${maskId})`} />}
