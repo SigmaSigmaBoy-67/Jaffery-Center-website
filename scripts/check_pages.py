@@ -77,6 +77,7 @@ for name in PAGES:
         assert 'maskCamera.setAttribute("transform", transform)' in PORTAL_SOURCE
         assert 'data-gp-cover' in PORTAL_SOURCE and 'data-gp-exit-aperture' not in PORTAL_SOURCE
         assert 'Math.max(W, H) / (target.radius * 2) * 1.15' in PORTAL_SOURCE
+        assert 'completionRaf = requestAnimationFrame(() => { completionRaf = 0; complete(); })' in PORTAL_SOURCE
         assert '[0, 25, 50, 75, 90, 100]' in INTRO_SOURCE
     else:
         assert 'glyph-intro-root' not in page.ids and 'glyph-intro-entry.tsx' not in text, name

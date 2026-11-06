@@ -155,7 +155,7 @@ export default function GlyphPortal({
     const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const canvas = document.createElement("canvas");
     const context = canvas.getContext("2d", { willReadFrequently: true });
-    let disposed = false, raf = 0, dirty = true, active = true, ready = false;
+    let disposed = false, raf = 0, completionRaf = 0, dirty = true, active = true, ready = false;
     let browserFrameSeen = false, completed = false, failed = false;
     let debugProgress: number | null = debugMode ? 0 : null;
     let W = 1, H = 1, travel = 1, startScale = 1, endScale = 1;
@@ -361,7 +361,11 @@ export default function GlyphPortal({
         if (!autoStartedAt) autoStartedAt = now;
         autoProgress = clamp((now - autoStartedAt) / duration);
         paint(autoProgress);
-        if (autoProgress >= 1) { complete(); return; }
+        if (autoProgress >= 1) {
+          // Let the fully zoomed, page-sized mask paint once before removing the intro overlay.
+          if (!completionRaf) completionRaf = requestAnimationFrame(() => { completionRaf = 0; complete(); });
+          return;
+        }
         if (active && !raf) raf = requestAnimationFrame(frame);
         return;
       }
@@ -424,6 +428,7 @@ export default function GlyphPortal({
     return () => {
       disposed = true;
       cancelAnimationFrame(raf);
+      cancelAnimationFrame(completionRaf);
       observer.disconnect(); visibility.disconnect();
       if (!autoPlay) (root ?? window).removeEventListener("scroll", scroll);
       window.removeEventListener("resize", resize);
