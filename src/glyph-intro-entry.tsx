@@ -53,7 +53,7 @@ if (introPending && !window.matchMedia("(prefers-reduced-motion: reduce)").match
     let preferredFontLoaded = false;
     try {
       preferredFontLoaded = await Promise.race([
-        document.fonts?.load('900 120px "DM Sans"', "JAFFERY").then(() => true) ?? Promise.resolve(false),
+        document.fonts?.load('900 120px "DM Sans"', "WELCOME").then(() => true) ?? Promise.resolve(false),
         new Promise<boolean>((resolve) => window.setTimeout(() => resolve(false), 900)),
       ]);
     } catch { /* keep the measured local sans-serif fallback */ }
@@ -81,7 +81,7 @@ if (introPending && !window.matchMedia("(prefers-reduced-motion: reduce)").match
       focusChar: "A",
       fontFamily: measuredFont,
       fontWeight: 900,
-      word: "JAFFERY",
+      word: "WELCOME",
       className: "glyph-portal-intro",
       background: <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: "transparent" }} />,
       style: { "--gp-paper": "#FAF8F2", "--gp-ink": "#103B35", "--gp-field": "transparent", "--gp-foreground": "#103B35" },
