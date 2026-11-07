@@ -7,6 +7,8 @@ ROOT = Path(__file__).resolve().parent.parent
 PAGES = ('index', 'about', 'programs', 'sunday-school', 'visit', 'donate')
 INTRO_SOURCE = (ROOT / 'src/glyph-intro-entry.tsx').read_text(encoding='utf-8')
 PORTAL_SOURCE = (ROOT / 'components/ui/glyph-portal.tsx').read_text(encoding='utf-8')
+INVERSION_SOURCE = (ROOT / 'components/ui/inversion-circle-scroll-animation.tsx').read_text(encoding='utf-8')
+PARALLAX_SOURCE = (ROOT / 'components/ui/parallax-scroll-feature-section.tsx').read_text(encoding='utf-8')
 
 
 class Page(HTMLParser):
@@ -61,13 +63,18 @@ for name in PAGES:
     page = Page()
     page.feed(text)
     assert 'main' in page.ids and 'liquid-nav-root' in page.ids and 'footer-root' in page.ids, name
-    assert 'hero-hills-root' in page.ids and '/src/hills-entry.tsx' in text, name
+    if name != 'index':
+        assert 'hero-hills-root' in page.ids and '/src/hills-entry.tsx' in text, name
     assert 'site.js' in text, name
     if name == 'index':
         assert 'glyph-intro-root' in page.ids and '/src/glyph-intro-entry.tsx' in text
-        assert 'welcome-hero' in text and 'welcome-path' in page.ids and 'assets/hero-welcome-arch.jpg' in text
-        assert (ROOT / 'assets/hero-welcome-arch.jpg').is_file(), name
-        assert all(f'welcome-door--{room}' in text for room in ('faith', 'learn', 'belong')), name
+        assert 'home-scroll-experience-root' in page.ids and '/src/home-experience-entry.tsx' in text
+        assert 'assets/hero-welcome-arch.jpg' in text and (ROOT / 'assets/hero-welcome-arch.jpg').is_file(), name
+        assert all((ROOT / f'assets/{asset}').is_file() for asset in ('hero-arch.jpg', 'learning-room.jpg', 'community-gathering.jpg')), name
+        assert 'overflow-y:scroll' not in INVERSION_SOURCE and 'window.addEventListener("scroll"' in INVERSION_SOURCE
+        assert 'prefers-reduced-motion' in (ROOT / 'components/ui/inversion-circle-scroll-animation.css').read_text()
+        assert 'useScroll' in PARALLAX_SOURCE and 'useReducedMotion' in PARALLAX_SOURCE
+        assert 'useRef(null)' not in PARALLAX_SOURCE and 'useRef<HTMLElement>' in PARALLAX_SOURCE
         assert 'jaffery-glyph-intro-v1' in text and 'prefers-reduced-motion: reduce' in text
         assert 'data-gp-skip' in text and '#FBFAF6' in text
         assert 'sessionStorage.setItem(k,"done")' in text and '"started"' not in text

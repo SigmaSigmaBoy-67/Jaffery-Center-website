@@ -1,0 +1,135 @@
+.psfs {
+  --psfs-ink: #10332f;
+  --psfs-paper: #fbfaf6;
+  --psfs-muted: #607167;
+  --psfs-gold: #a48753;
+  overflow: clip;
+  color: var(--psfs-ink);
+  background: transparent;
+}
+.psfs-intro {
+  min-height: 72svh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 105px 24px 82px;
+  text-align: center;
+  background: transparent;
+}
+.psfs-kicker,
+.psfs-feature-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #647465;
+  font: 600 10px/1.4 var(--sans);
+  letter-spacing: .18em;
+  text-transform: uppercase;
+}
+.psfs-kicker span,
+.psfs-feature-label span { color: var(--psfs-gold); font: 400 16px var(--serif); letter-spacing: 0; }
+.psfs-intro h2 {
+  margin: 25px 0 16px;
+  color: var(--psfs-ink);
+  font: 400 clamp(48px, 7vw, 84px)/.98 var(--serif);
+  letter-spacing: -.05em;
+}
+.psfs-intro h2 em { color: var(--psfs-gold); font-weight: 400; }
+.psfs-intro-copy { max-width: 42ch; margin: 0; color: var(--psfs-muted); font-size: 16px; line-height: 1.7; }
+.psfs-scroll-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 35px;
+  padding: 10px 0;
+  border-bottom: 1px solid #a9a890;
+  color: #45594d;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: .15em;
+  text-decoration: none;
+}
+.psfs-scroll-cue:focus-visible,
+.psfs-link:focus-visible { outline: 2px solid #987644; outline-offset: 5px; }
+.psfs-list { background: transparent; }
+.psfs-feature {
+  width: min(1240px, calc(100% - 64px));
+  min-height: min(860px, 100svh);
+  margin-inline: auto;
+  display: grid;
+  grid-template-columns: minmax(0, .82fr) minmax(0, 1.18fr);
+  align-items: center;
+  gap: clamp(38px, 7vw, 110px);
+  padding: 65px 0;
+  border-top: 1px solid #dedbcf;
+}
+.psfs-feature--reverse { grid-template-columns: minmax(0, 1.18fr) minmax(0, .82fr); }
+.psfs-feature--reverse .psfs-copy { order: 2; }
+.psfs-feature--reverse .psfs-image-frame { order: 1; }
+.psfs-copy { max-width: 470px; padding: 24px 0; }
+.psfs-feature-label { margin: 0 0 26px; }
+.psfs-copy h3 {
+  margin: 0;
+  color: var(--psfs-ink);
+  font: 400 clamp(38px, 5vw, 66px)/1.04 var(--serif);
+  letter-spacing: -.045em;
+  text-wrap: balance;
+}
+.psfs-description { max-width: 42ch; margin: 24px 0 28px; color: var(--psfs-muted); font-size: 16px; line-height: 1.8; }
+.psfs-link { display: inline-flex; align-items: center; gap: 10px; color: #285547; font-size: 13px; font-weight: 600; text-decoration: none; }
+.psfs-link svg { transition: transform .2s ease; }
+.psfs-link:hover svg { transform: translate(3px,-3px); }
+.psfs-image-frame {
+  position: relative;
+  width: 100%;
+  height: clamp(360px, 48vw, 620px);
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(16,51,47,.15);
+  border-radius: 48% 48% 8px 8px / 28% 28% 8px 8px;
+  background: #e6e1d4;
+  box-shadow: 0 20px 55px rgba(16,51,47,.12);
+}
+.psfs-image-frame img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.psfs-image-frame figcaption {
+  position: absolute;
+  inset: auto 18px 17px;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 13px;
+  border: 1px solid rgba(255,255,255,.5);
+  border-radius: 3px;
+  color: #fffaf0;
+  background: rgba(13,45,37,.56);
+  font-size: 8px;
+  font-weight: 600;
+  letter-spacing: .14em;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+@supports not (clip-path: inset(0)) {
+  .psfs-image-frame { opacity: 1 !important; clip-path: none !important; }
+}
+@media (max-width: 760px) {
+  .psfs-intro { min-height: 68svh; padding: 94px 22px 68px; }
+  .psfs-feature,
+  .psfs-feature--reverse {
+    width: min(560px, calc(100% - 36px));
+    min-height: 0;
+    grid-template-columns: 1fr;
+    gap: 18px;
+    padding: 76px 0 84px;
+  }
+  .psfs-feature--reverse .psfs-copy,
+  .psfs-feature--reverse .psfs-image-frame { order: initial; }
+  .psfs-copy { padding: 0 2px; }
+  .psfs-copy h3 { max-width: 13ch; font-size: clamp(38px, 10vw, 52px); }
+  .psfs-description { margin: 16px 0 20px; font-size: 15px; }
+  .psfs-image-frame { height: clamp(300px, 96vw, 460px); border-radius: 47% 47% 7px 7px / 25% 25% 7px 7px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .psfs-link svg { transition: none; }
+  .psfs-image-frame { opacity: 1 !important; clip-path: none !important; }
+}
