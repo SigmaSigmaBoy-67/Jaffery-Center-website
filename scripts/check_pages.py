@@ -71,6 +71,7 @@ for name in PAGES:
         assert 'import.meta.env.DEV' in INTRO_SOURCE and 'introDebug' in INTRO_SOURCE
         assert 'className: "glyph-portal-intro"' in INTRO_SOURCE
         assert 'showForegroundGlyph: true' in INTRO_SOURCE and 'front: <h1' not in INTRO_SOURCE
+        assert 'word: "WELCOME"' in INTRO_SOURCE
         assert 'glyph-intro-react-root' in text
         assert 'data-gp-foreground-glyph' in PORTAL_SOURCE
         assert 'foregroundGlyph.setAttribute("transform", transform)' in PORTAL_SOURCE
@@ -78,6 +79,9 @@ for name in PAGES:
         assert 'data-gp-cover' in PORTAL_SOURCE and 'data-gp-exit-aperture' not in PORTAL_SOURCE
         assert 'Math.max(W, H) / (target.radius * 2) * 1.15' in PORTAL_SOURCE
         assert 'completionRaf = requestAnimationFrame(() => { completionRaf = 0; complete(); })' in PORTAL_SOURCE
+        assert 'setTimeout(() => revealSite(false, false), 12000)' in INTRO_SOURCE
+        assert 'fallbackTimer = window.setTimeout(() => revealSite(false, false), 20000)' in INTRO_SOURCE
+        assert 'Math.min(50, Math.max(0, now - lastAutoFrameAt))' in PORTAL_SOURCE
         assert '[0, 25, 50, 75, 90, 100]' in INTRO_SOURCE
     else:
         assert 'glyph-intro-root' not in page.ids and 'glyph-intro-entry.tsx' not in text, name

@@ -48,7 +48,7 @@ if (debugMode && introRoot && !window.matchMedia("(prefers-reduced-motion: reduc
 const introPending = !!introRoot && !!reactMount && document.documentElement.dataset.glyphIntro === "pending";
 if (introPending && !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
   // Initialization failure is recoverable and does not consume the tab's first visit.
-  if (!debugMode) fallbackTimer = window.setTimeout(() => revealSite(false, false), 6500);
+  if (!debugMode) fallbackTimer = window.setTimeout(() => revealSite(false, false), 12000);
   const show = async () => {
     let preferredFontLoaded = false;
     try {
@@ -89,6 +89,10 @@ if (introPending && !window.matchMedia("(prefers-reduced-motion: reduce)").match
       onFailure: () => revealSite(false, false),
       onProgress: (progress) => {
         if (progress <= 0.005 && introRoot.dataset.glyphActive !== "true") {
+          if (!debugMode) {
+            window.clearTimeout(fallbackTimer);
+            fallbackTimer = window.setTimeout(() => revealSite(false, false), 20000);
+          }
           const posterWord = introRoot.querySelector<HTMLElement>(".intro-poster-word");
           const scale = Number(reactMount.querySelector<HTMLElement>(".glyph-portal-intro")?.dataset.gpScale);
           if (posterWord && Number.isFinite(scale) && scale > 0) {

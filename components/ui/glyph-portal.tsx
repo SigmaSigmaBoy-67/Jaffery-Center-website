@@ -160,7 +160,7 @@ export default function GlyphPortal({
     let debugProgress: number | null = debugMode ? 0 : null;
     let W = 1, H = 1, travel = 1, startScale = 1, endScale = 1;
     let center = { x: 0, y: 0 }, target: Ink | null = null;
-    let lastProgress = -1, autoProgress = 0, autoStartedAt = 0;
+    let lastProgress = -1, autoProgress = 0, lastAutoFrameAt = 0;
     let candidates: Ink[] = [], letters: Letter[] = [];
     let choosing = false;
     let bounds = { x: 0, y: 0, width: 1, height: 1 };
@@ -358,8 +358,13 @@ export default function GlyphPortal({
       if (!ready || motion.matches || !target) { fail(); return; }
       if (autoPlay) {
         if (debugProgress !== null) { autoProgress = debugProgress; paint(autoProgress); return; }
-        if (!autoStartedAt) autoStartedAt = now;
-        autoProgress = clamp((now - autoStartedAt) / duration);
+        if (!lastAutoFrameAt) lastAutoFrameAt = now;
+        else {
+          // Cap a long dropped-frame gap so a busy browser cannot jump the camera to its end position.
+          const frameDelta = Math.min(50, Math.max(0, now - lastAutoFrameAt));
+          lastAutoFrameAt = now;
+          autoProgress = clamp(autoProgress + frameDelta / duration);
+        }
         paint(autoProgress);
         if (autoProgress >= 1) {
           // Let the fully zoomed, page-sized mask paint once before removing the intro overlay.
@@ -381,7 +386,7 @@ export default function GlyphPortal({
       debugProgress = clamp(value);
       browserFrameSeen = true;
       autoProgress = debugProgress;
-      autoStartedAt = 0;
+      lastAutoFrameAt = 0;
       cancelAnimationFrame(raf); raf = 0;
       if (ready) paint(autoProgress); else { dirty = true; schedule(); }
     };
