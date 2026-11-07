@@ -1,6 +1,6 @@
 # Jaffery Center of Roanoke — independent website
 
-This folder contains only the six-page Jaffery Center website. The original DeadlineOS application is not included. The header, footer, and favicon use the Jaffery Center logo image supplied for this project (`assets/brand/jaffery-center-logo*.png`). The older exploratory marks remain in `assets/brand/` for reference. This site has **no active online donation destination**: Support Us offers an email inquiry, not a payment link.
+This folder contains only the six-page Jaffery Center website. The original DeadlineOS application is not included. The header, footer, and favicon use the supplied Jaffery Center logo artwork: the extracted monogram is in the header and favicon, and the full lockup is in the footer (`assets/brand/jaffery-center-monogram.png`, `assets/brand/jaffery-center-logo-light.png`). The older exploratory marks remain in `assets/brand/` for reference. This site has **no active online donation destination**: Support Us offers an email inquiry, not a payment link.
 
 ## Develop and verify
 

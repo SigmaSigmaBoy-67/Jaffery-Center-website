@@ -515,7 +515,7 @@ export default function GlyphPortal({
               <g data-gp-mask-camera><text data-gp-mask-glyph x="0" y="0" fill="black" style={{ fontFamily, fontWeight: weight, fontSize: 100, fontKerning: "none", fontVariantLigatures: "none", letterSpacing: 0 }}>{text}</text></g>
             </mask>}
           </defs>
-          {portalReveal && <rect data-gp-cover x="0" y="0" width="1" height="1" fill="#FAF8F2" mask={`url(#${maskId})`} />}
+          {portalReveal && <rect data-gp-cover x="0" y="0" width="1" height="1" fill="var(--gp-paper)" mask={`url(#${maskId})`} />}
           {showForegroundGlyph && <text data-gp-foreground-glyph x="0" y="0" fill="var(--gp-ink)" style={{ fontFamily, fontWeight: weight, fontSize: 100, fontKerning: "none", fontVariantLigatures: "none", letterSpacing: 0 }}>{text}</text>}
           <g data-gp-marks style={{ visibility: annotations ? "visible" : "hidden" }}><path /></g>
         </svg>

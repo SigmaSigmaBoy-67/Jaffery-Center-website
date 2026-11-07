@@ -39,7 +39,7 @@ class Page(HTMLParser):
                 self.active.append(href)
         if tag == 'img':
             self.images.append(attrs.get('src', ''))
-            if attrs.get('src') in {'assets/brand/jaffery-center-monogram.png', 'assets/brand/jaffery-center-logo-dark.png'} and self.section in self.brand_slots:
+            if attrs.get('src') in {'assets/brand/jaffery-center-monogram.png', 'assets/brand/jaffery-center-logo-light.png'} and self.section in self.brand_slots:
                 self.brand_slots[self.section] += 1
         if tag == 'link' and attrs.get('rel') == 'icon':
             self.favicons.append(attrs.get('href', ''))
@@ -65,8 +65,11 @@ for name in PAGES:
     assert 'site.js' in text, name
     if name == 'index':
         assert 'glyph-intro-root' in page.ids and '/src/glyph-intro-entry.tsx' in text
+        assert 'welcome-hero' in text and 'welcome-path' in page.ids and 'assets/hero-welcome-arch.jpg' in text
+        assert (ROOT / 'assets/hero-welcome-arch.jpg').is_file(), name
+        assert all(f'welcome-door--{room}' in text for room in ('faith', 'learn', 'belong')), name
         assert 'jaffery-glyph-intro-v1' in text and 'prefers-reduced-motion: reduce' in text
-        assert 'data-gp-skip' in text and '#FAF8F2' in text
+        assert 'data-gp-skip' in text and '#FBFAF6' in text
         assert 'sessionStorage.setItem(k,"done")' in text and '"started"' not in text
         assert 'import.meta.env.DEV' in INTRO_SOURCE and 'introDebug' in INTRO_SOURCE
         assert 'className: "glyph-portal-intro"' in INTRO_SOURCE
@@ -102,7 +105,7 @@ for name in PAGES:
             assert (ROOT / href).is_file(), (name, href)
     assert page.favicons == ['assets/brand/jaffery-center-monogram.png'], name
     assert page.images.count('assets/brand/jaffery-center-monogram.png') == 1, name
-    assert page.images.count('assets/brand/jaffery-center-logo-dark.png') == 1, name
+    assert page.images.count('assets/brand/jaffery-center-logo-light.png') == 1, name
     assert page.brand_slots == {'header': 1, 'footer': 1}, name
     for image in (*page.images, *page.favicons):
         assert (ROOT / image).is_file(), (name, image)

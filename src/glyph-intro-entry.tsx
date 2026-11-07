@@ -84,7 +84,7 @@ if (introPending && !window.matchMedia("(prefers-reduced-motion: reduce)").match
       word: "WELCOME",
       className: "glyph-portal-intro",
       background: <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: "transparent" }} />,
-      style: { "--gp-paper": "#FAF8F2", "--gp-ink": "#103B35", "--gp-field": "transparent", "--gp-foreground": "#103B35" },
+      style: { "--gp-paper": "#FBFAF6", "--gp-ink": "#10332F", "--gp-field": "transparent", "--gp-foreground": "#10332F" },
       onComplete: () => revealSite(false, true),
       onFailure: () => revealSite(false, false),
       onProgress: (progress) => {
