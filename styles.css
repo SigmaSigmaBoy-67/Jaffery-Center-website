@@ -1878,3 +1878,18 @@ h3 {
   .donate-option .icon { transition: transform .25s ease; }
   .donate-option:hover .icon { transform: scale(1.07); }
 }
+
+/* Official Jaffery Center monogram in the header and full lockup in the footer. */
+.brand-symbol {
+  display: block;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  object-fit: contain;
+  border: 0;
+  transform: none;
+}
+.footer-grid .brand-symbol {
+  width: 112px;
+  height: 96px;
+}

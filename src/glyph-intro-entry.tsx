@@ -78,7 +78,7 @@ if (introPending && !window.matchMedia("(prefers-reduced-motion: reduce)").match
       debugMode,
       portalReveal: true,
       showForegroundGlyph: true,
-      focusChar: "A",
+      focusChar: "E",
       fontFamily: measuredFont,
       fontWeight: 900,
       word: "WELCOME",

@@ -38,7 +38,9 @@ SPRITE = '''<svg aria-hidden="true" style="position:absolute;width:0;height:0;ov
 </svg>'''
 
 def brand(reversed=False):
-    return '<a href="index.html" class="brand" title="Jaffery Center home"><img class="brand-symbol" src="assets/brand/mihrab-color.svg" alt="" width="44" height="44"><span class="brand-text">Jaffery Center<small>of Roanoke</small></span></a>'
+    if reversed:
+        return '<a href="index.html" class="brand" title="Jaffery Center home"><img class="brand-symbol" src="assets/brand/jaffery-center-logo-dark.png" alt="Jaffery Center of Roanoke" width="110" height="95"></a>'
+    return '<a href="index.html" class="brand" title="Jaffery Center home"><img class="brand-symbol" src="assets/brand/jaffery-center-monogram.png" alt="" width="44" height="44"><span class="brand-text">Jaffery Center<small>of Roanoke</small></span></a>'
 
 _nav_markup = None
 
@@ -81,7 +83,7 @@ def page(filename, title, description, body, active):
     intro_entry = '<script type="module" src="/src/glyph-intro-entry.tsx"></script>' if is_home else ''
     theme_color = '#FAF8F2' if is_home else '#060907'
     html = f'''<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="{theme_color}"><meta name="description" content="{escape(description, quote=True)}"><title>{escape(title)} | Jaffery Center of Roanoke</title>{intro_bootstrap}{intro_style}<link rel="icon" type="image/svg+xml" href="assets/brand/mihrab-color.svg"><link rel="preload" href="assets/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/cormorant-garamond-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="components/ui/liquid-glass-navbar.css"><link rel="stylesheet" href="brand-theme.css"><script type="module" src="/src/navbar-entry.tsx"></script><script type="module" src="/src/hills-entry.tsx"></script><script type="module" src="/site.js"></script><script type="module" src="/src/footer-entry.tsx"></script>{intro_entry}</head><body>{SPRITE}{intro_markup}{header(active)}<main id="main">{body}</main>{footer()}</body></html>'''
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="{theme_color}"><meta name="description" content="{escape(description, quote=True)}"><title>{escape(title)} | Jaffery Center of Roanoke</title>{intro_bootstrap}{intro_style}<link rel="icon" type="image/png" href="assets/brand/jaffery-center-monogram.png"><link rel="preload" href="assets/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/cormorant-garamond-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="components/ui/liquid-glass-navbar.css"><link rel="stylesheet" href="brand-theme.css"><script type="module" src="/src/navbar-entry.tsx"></script><script type="module" src="/src/hills-entry.tsx"></script><script type="module" src="/site.js"></script><script type="module" src="/src/footer-entry.tsx"></script>{intro_entry}</head><body>{SPRITE}{intro_markup}{header(active)}<main id="main">{body}</main>{footer()}</body></html>'''
     Path(filename).write_text(html, encoding='utf-8')
 
 def feature(title, text, label, destination, glyph, delay=''):

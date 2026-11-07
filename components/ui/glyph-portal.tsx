@@ -232,7 +232,7 @@ export default function GlyphPortal({
       // Finish as soon as the measured patch of solid glyph ink can cover the viewport.
       // Going farther carries the glyph past the screen and needs a separate wipe to reveal the page.
       const measuredEndScale = target ? Math.max(W, H) / (target.radius * 2) * 1.15 : startScale;
-      endScale = target ? Math.max(startScale, measuredEndScale) : startScale;
+      endScale = target ? Math.max(startScale, autoPlay ? Math.min(measuredEndScale, 85) : measuredEndScale) : startScale;
       section.dataset.gpFocus = target ? Array.from(text.slice(target.index))[0] : "";
       section.dataset.gpFocusIndex = String(target?.index ?? -1);
       for (const button of buttons) {
