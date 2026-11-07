@@ -1,0 +1,140 @@
+/* The intro is a temporary, fixed overlay; the generated homepage remains mounted beneath it. */
+html[data-glyph-intro="pending"],
+html[data-glyph-intro="pending"] body {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+#glyph-intro-root { display: none; }
+html[data-glyph-intro="pending"] #glyph-intro-root {
+  position: fixed;
+  z-index: 1000;
+  inset: 0;
+  display: block;
+  overflow: hidden;
+  background: #FAF8F2;
+  color: #103B35;
+  pointer-events: auto;
+}
+html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { background: transparent; }
+#glyph-intro-root #glyph-intro-react-root { position: absolute; inset: 0; visibility: hidden; }
+#glyph-intro-root[data-glyph-active="true"] #glyph-intro-react-root { visibility: visible; }
+#glyph-intro-root .intro-poster {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #FAF8F2;
+}
+#glyph-intro-root .intro-poster-word {
+  margin: 0;
+  color: #103B35;
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: min(17vw, 220px);
+  font-weight: 900;
+  line-height: .88;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+#glyph-intro-root[data-glyph-font="fallback"] .intro-poster-word { font-family: Arial, Helvetica, sans-serif !important; }
+#glyph-intro-root .intro-poster-word { animation: none; transform: translateY(calc(52px - 4vh)); }
+#glyph-intro-root .glyph-portal-intro {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100svh;
+  height: 100dvh;
+  min-height: 100svh;
+  overflow: hidden;
+  background: transparent !important;
+  color: #103B35;
+  --gp-paper: #FAF8F2;
+  --gp-ink: #103B35;
+  --gp-field: transparent;
+  --gp-foreground: #103B35;
+  font-family: "DM Sans", Arial, sans-serif;
+}
+#glyph-intro-root .glyph-portal-intro[data-gp-autoplay="true"] [data-gp-pin] {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: var(--gp-height, 100svh);
+  overflow: hidden;
+}
+#glyph-intro-root .glyph-portal-intro [data-gp-field] {
+  background: transparent !important;
+  opacity: 1 !important;
+}
+#glyph-intro-root .glyph-portal-intro [data-gp-cover] {
+  pointer-events: none;
+}
+#glyph-intro-root .glyph-portal-intro [data-gp-art] { z-index: 3; }
+#glyph-intro-root .glyph-portal-intro [data-gp-front] {
+  z-index: 4;
+  display: grid;
+  place-items: center;
+}
+#glyph-intro-root .intro-skip {
+  pointer-events: auto;
+  position: absolute;
+  z-index: 1010;
+  top: max(22px, env(safe-area-inset-top));
+  right: max(22px, env(safe-area-inset-right));
+  min-height: 44px;
+  padding: 0 18px;
+  border: 1px solid rgba(16,59,53,.2);
+  border-radius: 999px;
+  background: rgba(250,248,242,.88);
+  color: #103B35;
+  box-shadow: 0 4px 14px rgba(16,59,53,.08), inset 0 1px rgba(255,255,255,.9);
+  font: 600 13px/1 "DM Sans", Arial, sans-serif;
+  cursor: pointer;
+  -webkit-backdrop-filter: blur(6px);
+  backdrop-filter: blur(6px);
+  transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
+}
+#glyph-intro-root .intro-skip:hover { background: #fffdf8; border-color: rgba(16,59,53,.42); transform: translateY(-1px); }
+#glyph-intro-root .intro-skip:focus-visible { outline: 3px solid #9a7746; outline-offset: 4px; }
+#glyph-intro-root .intro-debug {
+  position: absolute;
+  z-index: 1020;
+  left: max(14px, env(safe-area-inset-left));
+  bottom: max(14px, env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: 1px solid rgba(16,59,53,.22);
+  border-radius: 10px;
+  background: rgba(250,248,242,.96);
+  color: #103B35;
+  font: 600 11px/1 "DM Sans", Arial, sans-serif;
+  box-shadow: 0 3px 14px rgba(16,59,53,.12);
+  pointer-events: auto;
+}
+#glyph-intro-root .intro-debug span { margin-right: 3px; }
+#glyph-intro-root .intro-debug button {
+  min-width: 42px;
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1px solid rgba(16,59,53,.18);
+  border-radius: 6px;
+  background: #fffdf8;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+#glyph-intro-root .intro-debug button:hover,
+#glyph-intro-root .intro-debug button:focus-visible { border-color: #9a7746; outline: 2px solid #9a7746; outline-offset: 2px; }
+@media (max-width: 600px) {
+  #glyph-intro-root .intro-poster-word { font-size: min(17vw, 16vh, 82px); }
+  #glyph-intro-root .intro-skip { top: max(14px, env(safe-area-inset-top)); right: max(14px, env(safe-area-inset-right)); }
+}
+@media (max-width: 480px) {
+  #glyph-intro-root .intro-debug { box-sizing: border-box; width: calc(100vw - 28px); display: grid; grid-template-columns: auto repeat(6, minmax(30px, 1fr)); gap: 4px; padding: 6px; }
+  #glyph-intro-root .intro-debug span { font-size: 10px; }
+  #glyph-intro-root .intro-debug button { min-width: 0; min-height: 34px; padding: 0 3px; font-size: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  #glyph-intro-root .intro-poster-word { animation: none; }
+  #glyph-intro-root .intro-skip { transition: none; }
+}

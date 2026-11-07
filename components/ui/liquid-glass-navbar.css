@@ -1,0 +1,89 @@
+/* One capsule, one source of selection: aria-current from the URL. */
+.nimbus-nav {
+  --n-fg: #123b33;
+  --n-soft: #456359;
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px;
+  border-radius: 999px;
+  font-family: var(--sans, system-ui, sans-serif);
+  -webkit-tap-highlight-color: transparent;
+}
+.nimbus-glass {
+  position: absolute;
+  z-index: -2;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(165deg, rgba(255,255,255,.86), rgba(226,240,230,.64) 52%, rgba(246,251,245,.77));
+  border: 1px solid rgba(255,255,255,.86);
+  -webkit-backdrop-filter: blur(22px) saturate(1.35);
+  backdrop-filter: blur(22px) saturate(1.35);
+  box-shadow: inset 0 2px 1px rgba(255,255,255,.9), inset 0 -1px 3px rgba(38,94,75,.19), 0 12px 35px -12px rgba(5,42,34,.34);
+}
+.nimbus-glass::after {
+  content: "";
+  position: absolute;
+  inset: 3px 12px auto;
+  height: 30%;
+  border-radius: 100%;
+  background: linear-gradient(180deg, rgba(255,255,255,.48), transparent);
+  pointer-events: none;
+}
+.nimbus-drop {
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  pointer-events: none;
+  border-radius: 999px;
+  transform-origin: center;
+  background: radial-gradient(ellipse 90% 75% at 27% 10%, rgba(255,255,255,.97), transparent 73%), linear-gradient(150deg, rgba(202,239,218,.95), rgba(234,247,237,.82) 55%, rgba(196,225,207,.9));
+  border: 1px solid rgba(255,255,255,.86);
+  box-shadow: inset 0 1px 2px white, inset 0 -3px 6px rgba(35,115,84,.18), 0 4px 12px rgba(19,89,64,.16);
+  opacity: 0;
+  transition: transform 410ms cubic-bezier(.22,.9,.25,1), width 410ms cubic-bezier(.22,.9,.25,1), opacity 130ms;
+}
+.nimbus-nav[data-ready="true"] .nimbus-drop { opacity: 1; }
+.nimbus-nav[data-measuring="true"] .nimbus-drop { transition: none !important; scale: 1 1; }
+.nimbus-drop { scale: var(--capsule-scale, 1) 1; transition: transform 460ms cubic-bezier(.2,.82,.23,1), width 460ms cubic-bezier(.2,.82,.23,1), scale 220ms cubic-bezier(.2,.8,.25,1), opacity 130ms; }
+/* Avoid an initial slide from x=0; enable glide only after first paint. */
+.nimbus-nav:not([data-motion="true"]) .nimbus-drop { transition: opacity 130ms; }
+.nimbus-item {
+  position: relative;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--n-soft);
+  font: 600 14px/1 var(--sans, system-ui, sans-serif);
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 180ms;
+}
+/* Before hydration there is still a visible active state; after measurement
+   only the moving capsule remains. No duplicated glass indicators. */
+.nimbus-nav:not([data-ready="true"]) .nimbus-item[aria-current="page"] {
+  background: rgba(215,239,222,.87);
+  box-shadow: inset 0 1px white;
+}
+.nimbus-item:hover, .nimbus-item[aria-current="page"] { color: var(--n-fg); }
+.nimbus-item:focus-visible { outline: 2px solid #356c55; outline-offset: 2px; }
+.nv-ico { display: inline-flex; flex: none; }
+.nv-ico svg { width: 17px; height: 17px; }
+.nv-door { fill: transparent; }
+.nimbus-nav[data-compact="true"] .nimbus-item { width: 44px; padding: 0 11px; }
+.nimbus-nav[data-compact="true"] .nimbus-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nimbus-glass { background: #ecf5ed; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .nimbus-drop { transition: none !important; scale: 1 1; }
+}
