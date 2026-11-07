@@ -1,6 +1,6 @@
 # Jaffery Center of Roanoke — independent website
 
-This folder contains only the six-page Jaffery Center website. The original DeadlineOS application is not included. The mihrab mark currently shown in the header, footer, and favicon from `assets/brand/mihrab-color.svg` is a **proposed presentation**, not an approved organizational identity. The earlier `assets/brand/jc-star.svg` and `assets/brand/jc-favicon.svg` remain available for comparison. This site has **no active online donation destination**: Support Us offers an email inquiry, not a payment link.
+This folder contains only the six-page Jaffery Center website. The original DeadlineOS application is not included. The header, footer, and favicon use the supplied Jaffery Center logo artwork: the extracted monogram is in the header and favicon, and the full lockup is in the footer (`assets/brand/jaffery-center-monogram.png`, `assets/brand/jaffery-center-logo-light.png`). The older exploratory marks remain in `assets/brand/` for reference. This site has **no active online donation destination**: Support Us offers an email inquiry, not a payment link.
 
 ## Develop and verify
 
@@ -16,6 +16,8 @@ npm run preview           # Optional local production preview
 ```
 
 Edit content in `build.py`, then run `python3 build.py` locally and commit the six generated HTML files along with the source. Run typecheck, test, and build before publishing. The source of truth is `build.py`; do not edit generated pages alone. Site links are relative `.html` links, so all six routes work from a dedicated project's root. The lazy React footer has a complete static fallback in `build.py`, even with JavaScript off.
+
+The project already has TypeScript, Tailwind, the `@/` import alias, `lib/utils.ts`, and the shadcn-style `/components/ui` directory, so no CLI setup or context provider is needed. The homepage composes the scroll-driven circle portal and parallax feature sections from `/components/ui`; their styles are colocated CSS files. Framer Motion and Lucide React are project dependencies. Both animations respect reduced-motion preferences and use ordinary document scrolling.
 
 ## Separate GitHub repository and Vercel project
 

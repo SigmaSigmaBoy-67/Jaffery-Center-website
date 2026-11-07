@@ -11,8 +11,8 @@ html[data-glyph-intro="pending"] #glyph-intro-root {
   inset: 0;
   display: block;
   overflow: hidden;
-  background: #FAF8F2;
-  color: #103B35;
+  background: #FBFAF6;
+  color: #10332F;
   pointer-events: auto;
 }
 html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { background: transparent; }
@@ -23,11 +23,11 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
   inset: 0;
   display: grid;
   place-items: center;
-  background: #FAF8F2;
+  background: #FBFAF6;
 }
 #glyph-intro-root .intro-poster-word {
   margin: 0;
-  color: #103B35;
+  color: #10332F;
   font-family: "DM Sans", Arial, sans-serif;
   font-size: min(17vw, 220px);
   font-weight: 900;
@@ -46,11 +46,11 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
   min-height: 100svh;
   overflow: hidden;
   background: transparent !important;
-  color: #103B35;
-  --gp-paper: #FAF8F2;
-  --gp-ink: #103B35;
+  color: #10332F;
+  --gp-paper: #FBFAF6;
+  --gp-ink: #10332F;
   --gp-field: transparent;
-  --gp-foreground: #103B35;
+  --gp-foreground: #10332F;
   font-family: "DM Sans", Arial, sans-serif;
 }
 #glyph-intro-root .glyph-portal-intro[data-gp-autoplay="true"] [data-gp-pin] {
@@ -81,18 +81,18 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
   right: max(22px, env(safe-area-inset-right));
   min-height: 44px;
   padding: 0 18px;
-  border: 1px solid rgba(16,59,53,.2);
+  border: 1px solid rgba(16,51,47,.2);
   border-radius: 999px;
-  background: rgba(250,248,242,.88);
-  color: #103B35;
-  box-shadow: 0 4px 14px rgba(16,59,53,.08), inset 0 1px rgba(255,255,255,.9);
+  background: rgba(251,250,246,.88);
+  color: #10332F;
+  box-shadow: 0 4px 14px rgba(16,51,47,.08), inset 0 1px rgba(255,255,255,.9);
   font: 600 13px/1 "DM Sans", Arial, sans-serif;
   cursor: pointer;
   -webkit-backdrop-filter: blur(6px);
   backdrop-filter: blur(6px);
   transition: background 180ms ease, border-color 180ms ease, transform 180ms ease;
 }
-#glyph-intro-root .intro-skip:hover { background: #fffdf8; border-color: rgba(16,59,53,.42); transform: translateY(-1px); }
+#glyph-intro-root .intro-skip:hover { background: #fffdf8; border-color: rgba(16,51,47,.42); transform: translateY(-1px); }
 #glyph-intro-root .intro-skip:focus-visible { outline: 3px solid #9a7746; outline-offset: 4px; }
 #glyph-intro-root .intro-debug {
   position: absolute;
@@ -103,12 +103,12 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
   align-items: center;
   gap: 6px;
   padding: 8px 10px;
-  border: 1px solid rgba(16,59,53,.22);
+  border: 1px solid rgba(16,51,47,.22);
   border-radius: 10px;
-  background: rgba(250,248,242,.96);
-  color: #103B35;
+  background: rgba(251,250,246,.96);
+  color: #10332F;
   font: 600 11px/1 "DM Sans", Arial, sans-serif;
-  box-shadow: 0 3px 14px rgba(16,59,53,.12);
+  box-shadow: 0 3px 14px rgba(16,51,47,.12);
   pointer-events: auto;
 }
 #glyph-intro-root .intro-debug span { margin-right: 3px; }
@@ -116,7 +116,7 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
   min-width: 42px;
   min-height: 36px;
   padding: 0 8px;
-  border: 1px solid rgba(16,59,53,.18);
+  border: 1px solid rgba(16,51,47,.18);
   border-radius: 6px;
   background: #fffdf8;
   color: inherit;

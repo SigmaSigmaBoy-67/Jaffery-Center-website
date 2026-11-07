@@ -7,6 +7,8 @@ ROOT = Path(__file__).resolve().parent.parent
 PAGES = ('index', 'about', 'programs', 'sunday-school', 'visit', 'donate')
 INTRO_SOURCE = (ROOT / 'src/glyph-intro-entry.tsx').read_text(encoding='utf-8')
 PORTAL_SOURCE = (ROOT / 'components/ui/glyph-portal.tsx').read_text(encoding='utf-8')
+INVERSION_SOURCE = (ROOT / 'components/ui/inversion-circle-scroll-animation.tsx').read_text(encoding='utf-8')
+PARALLAX_SOURCE = (ROOT / 'components/ui/parallax-scroll-feature-section.tsx').read_text(encoding='utf-8')
 
 
 class Page(HTMLParser):
@@ -39,7 +41,7 @@ class Page(HTMLParser):
                 self.active.append(href)
         if tag == 'img':
             self.images.append(attrs.get('src', ''))
-            if attrs.get('src') == 'assets/brand/mihrab-color.svg' and self.section in self.brand_slots:
+            if attrs.get('src') in {'assets/brand/jaffery-center-monogram.png', 'assets/brand/jaffery-center-logo-light.png'} and self.section in self.brand_slots:
                 self.brand_slots[self.section] += 1
         if tag == 'link' and attrs.get('rel') == 'icon':
             self.favicons.append(attrs.get('href', ''))
@@ -61,12 +63,20 @@ for name in PAGES:
     page = Page()
     page.feed(text)
     assert 'main' in page.ids and 'liquid-nav-root' in page.ids and 'footer-root' in page.ids, name
-    assert 'hero-hills-root' in page.ids and '/src/hills-entry.tsx' in text, name
+    if name != 'index':
+        assert 'hero-hills-root' in page.ids and '/src/hills-entry.tsx' in text, name
     assert 'site.js' in text, name
     if name == 'index':
         assert 'glyph-intro-root' in page.ids and '/src/glyph-intro-entry.tsx' in text
+        assert 'home-scroll-experience-root' in page.ids and '/src/home-experience-entry.tsx' in text
+        assert 'assets/hero-welcome-arch.jpg' in text and (ROOT / 'assets/hero-welcome-arch.jpg').is_file(), name
+        assert all((ROOT / f'assets/{asset}').is_file() for asset in ('hero-arch.jpg', 'learning-room.jpg', 'community-gathering.jpg')), name
+        assert 'overflow-y:scroll' not in INVERSION_SOURCE and 'window.addEventListener("scroll"' in INVERSION_SOURCE
+        assert 'prefers-reduced-motion' in (ROOT / 'components/ui/inversion-circle-scroll-animation.css').read_text()
+        assert 'useScroll' in PARALLAX_SOURCE and 'useReducedMotion' in PARALLAX_SOURCE
+        assert 'useRef(null)' not in PARALLAX_SOURCE and 'useRef<HTMLElement>' in PARALLAX_SOURCE
         assert 'jaffery-glyph-intro-v1' in text and 'prefers-reduced-motion: reduce' in text
-        assert 'data-gp-skip' in text and '#FAF8F2' in text
+        assert 'data-gp-skip' in text and '#FBFAF6' in text
         assert 'sessionStorage.setItem(k,"done")' in text and '"started"' not in text
         assert 'import.meta.env.DEV' in INTRO_SOURCE and 'introDebug' in INTRO_SOURCE
         assert 'className: "glyph-portal-intro"' in INTRO_SOURCE
@@ -100,9 +110,10 @@ for name in PAGES:
             assert href[1:] in page.ids, (name, href)
         elif href.endswith('.html'):
             assert (ROOT / href).is_file(), (name, href)
-    assert page.favicons == ['assets/brand/mihrab-color.svg'], name
-    assert page.images.count('assets/brand/mihrab-color.svg') == 2, name
-    assert page.brand_slots == {'header': 1, 'footer': 1}, name  # one mark per original branding slot
+    assert page.favicons == ['assets/brand/jaffery-center-monogram.png'], name
+    assert page.images.count('assets/brand/jaffery-center-monogram.png') == 1, name
+    assert page.images.count('assets/brand/jaffery-center-logo-light.png') == 1, name
+    assert page.brand_slots == {'header': 1, 'footer': 1}, name
     for image in (*page.images, *page.favicons):
         assert (ROOT / image).is_file(), (name, image)
     if name == 'programs':
