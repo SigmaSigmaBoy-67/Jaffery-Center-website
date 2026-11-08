@@ -4,11 +4,9 @@ from pathlib import Path
 import json
 
 ROOT = Path(__file__).resolve().parent.parent
-PAGES = ('index', 'about', 'programs', 'sunday-school', 'visit', 'donate')
+PAGES = ('index', 'about', 'community', 'programs', 'sunday-school', 'visit', 'donate')
 INTRO_SOURCE = (ROOT / 'src/glyph-intro-entry.tsx').read_text(encoding='utf-8')
 PORTAL_SOURCE = (ROOT / 'components/ui/glyph-portal.tsx').read_text(encoding='utf-8')
-INVERSION_SOURCE = (ROOT / 'components/ui/inversion-circle-scroll-animation.tsx').read_text(encoding='utf-8')
-PARALLAX_SOURCE = (ROOT / 'components/ui/parallax-scroll-feature-section.tsx').read_text(encoding='utf-8')
 
 
 class Page(HTMLParser):
@@ -63,30 +61,45 @@ for name in PAGES:
     page = Page()
     page.feed(text)
     assert 'main' in page.ids and 'liquid-nav-root' in page.ids and 'footer-root' in page.ids, name
-    if name != 'index':
-        assert 'hero-hills-root' in page.ids and '/src/hills-entry.tsx' in text, name
+    assert 'hero-hills-root' not in page.ids and '/src/hills-entry.tsx' not in text, name
     assert 'site.js' in text, name
+    if name == 'community':
+        assert 'community-dashboard-root' in page.ids and '/src/community-entry.tsx' in text
+        assert 'adjustable-glass-dashboard.css' in text
+        dashboard = (ROOT / 'components/ui/adjustable-glass-dashboard.tsx').read_text(encoding='utf-8')
+        assert all(item in dashboard for item in ('Programs & gatherings', 'Sunday School', '3031 Preston Avenue', 'jafferycenter@gmail.com'))
+        assert all(item not in dashboard for item in ('transactions', 'balance', 'savings goals', 'Automate Flows', 'Troy'))
+        assert 'assets/house-of-light.svg' in dashboard and 'gsap' in dashboard and 'useGSAP' in dashboard
+    if name == 'visit':
+        assert 'method=\"post\"' in text and 'mailto:jafferycenter@gmail.com' in text
     if name == 'index':
         assert 'glyph-intro-root' in page.ids and '/src/glyph-intro-entry.tsx' in text
-        assert 'home-scroll-experience-root' in page.ids and '/src/home-experience-entry.tsx' in text
-        assert 'assets/hero-welcome-arch.jpg' in text and (ROOT / 'assets/hero-welcome-arch.jpg').is_file(), name
-        assert all((ROOT / f'assets/{asset}').is_file() for asset in ('hero-arch.jpg', 'learning-room.jpg', 'community-gathering.jpg')), name
-        assert 'overflow-y:scroll' not in INVERSION_SOURCE and 'window.addEventListener("scroll"' in INVERSION_SOURCE
-        assert 'prefers-reduced-motion' in (ROOT / 'components/ui/inversion-circle-scroll-animation.css').read_text()
-        assert 'useScroll' in PARALLAX_SOURCE and 'useReducedMotion' in PARALLAX_SOURCE
-        assert 'useRef(null)' not in PARALLAX_SOURCE and 'useRef<HTMLElement>' in PARALLAX_SOURCE
+        assert 'threshold-run' in page.ids and 'threshold-stage' in page.ids and 'house-scene' in page.ids
+        assert '/src/house-scene-entry.ts' in text and 'assets/house-of-light.svg' in (ROOT / 'build.py').read_text()
+        scene = (ROOT / 'assets/house-of-light.svg').read_text(encoding='utf-8')
+        assert all(layer in scene for layer in ('scene-camera', 'mountain-distant', 'mountain-middle', 'mountain-near', 'geometric-screen', 'screen-shadow'))
+        assert all(label in text for label in ('Dawn', 'Day', 'Dusk', 'Explore the center', 'Plan a visit'))
+        assert all(chapter in text for chapter in ('Gather in faith', 'Learn together', 'Find your community'))
+        assert 'data-notebook-turn' in text and 'notebook-notes' in text
+        assert 'Illustrative scene · not a photograph of the center' in text
+        assert 'Blue Ridge' in text and '3031 Preston Avenue' in text
+        assert 'home-scroll-experience-root' not in page.ids and '/src/home-experience-entry.tsx' not in text
+        assert 'courtyard-art' not in text and 'parallax' not in text.lower()
         assert 'jaffery-glyph-intro-v1' in text and 'prefers-reduced-motion: reduce' in text
-        assert 'data-gp-skip' in text and '#FBFAF6' in text
+        assert 'data-gp-skip' in text and '#F6F1E7' in text
+        assert '15000' in text and 'body > main' in text and 'window.__jafferyRestorePage' in text
         assert 'sessionStorage.setItem(k,"done")' in text and '"started"' not in text
         assert 'import.meta.env.DEV' in INTRO_SOURCE and 'introDebug' in INTRO_SOURCE
         assert 'className: "glyph-portal-intro"' in INTRO_SOURCE
         assert 'showForegroundGlyph: true' in INTRO_SOURCE and 'front: <h1' not in INTRO_SOURCE
-        assert 'word: "WELCOME"' in INTRO_SOURCE
+        assert 'word: "JAFFERY"' in INTRO_SOURCE
         assert 'glyph-intro-react-root' in text
         assert 'data-gp-foreground-glyph' in PORTAL_SOURCE
         assert 'foregroundGlyph.setAttribute("transform", transform)' in PORTAL_SOURCE
         assert 'maskCamera.setAttribute("transform", transform)' in PORTAL_SOURCE
         assert 'data-gp-cover' in PORTAL_SOURCE and 'data-gp-exit-aperture' not in PORTAL_SOURCE
+        assert 'mask={`url(#${maskId})`}' in PORTAL_SOURCE
+        assert '{!autoPlay && <div data-gp-caption>' in PORTAL_SOURCE
         assert 'Math.max(W, H) / (target.radius * 2) * 1.15' in PORTAL_SOURCE
         assert 'completionRaf = requestAnimationFrame(() => { completionRaf = 0; complete(); })' in PORTAL_SOURCE
         assert 'setTimeout(() => revealSite(false, false), 12000)' in INTRO_SOURCE
@@ -95,8 +108,8 @@ for name in PAGES:
         assert '[0, 25, 50, 75, 90, 100]' in INTRO_SOURCE
     else:
         assert 'glyph-intro-root' not in page.ids and 'glyph-intro-entry.tsx' not in text, name
-    assert '/src/footer-entry.tsx' in text and page.footer_config, name
-    assert len(page.footer_config['explore']) == 6 and len(page.footer_config['find']) == 3, name
+    assert '/src/footer-entry.tsx' not in text and 'site-footer' in text and page.footer_config, name
+    assert len(page.footer_config['explore']) == 7 and len(page.footer_config['find']) == 3, name
     for item in [page.footer_config['cta'], *page.footer_config['explore'], *page.footer_config['find']]:
         assert item['href'] and item['href'] != '#', (name, item)
         if item['href'].endswith('.html'):
@@ -111,9 +124,11 @@ for name in PAGES:
         elif href.endswith('.html'):
             assert (ROOT / href).is_file(), (name, href)
     assert page.favicons == ['assets/brand/jaffery-center-monogram.png'], name
-    assert page.images.count('assets/brand/jaffery-center-monogram.png') == 1, name
+    expected_monograms = 2 if name == 'community' else 1
+    assert page.images.count('assets/brand/jaffery-center-monogram.png') == expected_monograms, name
     assert page.images.count('assets/brand/jaffery-center-logo-light.png') == 1, name
-    assert page.brand_slots == {'header': 1, 'footer': 1}, name
+    expected_header_brands = 2 if name == 'community' else 1
+    assert page.brand_slots == {'header': expected_header_brands, 'footer': 1}, name
     for image in (*page.images, *page.favicons):
         assert (ROOT / image).is_file(), (name, image)
     if name == 'programs':

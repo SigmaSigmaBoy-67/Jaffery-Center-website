@@ -11,8 +11,8 @@ html[data-glyph-intro="pending"] #glyph-intro-root {
   inset: 0;
   display: block;
   overflow: hidden;
-  background: #FBFAF6;
-  color: #10332F;
+  background: #F6F1E7;
+  color: #173B32;
   pointer-events: auto;
 }
 html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { background: transparent; }
@@ -23,11 +23,11 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
   inset: 0;
   display: grid;
   place-items: center;
-  background: #FBFAF6;
+  background: #F6F1E7;
 }
 #glyph-intro-root .intro-poster-word {
   margin: 0;
-  color: #10332F;
+  color: #173B32;
   font-family: "DM Sans", Arial, sans-serif;
   font-size: min(17vw, 220px);
   font-weight: 900;
@@ -46,11 +46,11 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
   min-height: 100svh;
   overflow: hidden;
   background: transparent !important;
-  color: #10332F;
-  --gp-paper: #FBFAF6;
-  --gp-ink: #10332F;
-  --gp-field: transparent;
-  --gp-foreground: #10332F;
+  color: #173B32;
+  --gp-paper: #F6F1E7;
+  --gp-ink: #173B32;
+  --gp-field: #173B32;
+  --gp-foreground: #173B32;
   font-family: "DM Sans", Arial, sans-serif;
 }
 #glyph-intro-root .glyph-portal-intro[data-gp-autoplay="true"] [data-gp-pin] {
@@ -59,10 +59,6 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
   width: 100%;
   height: var(--gp-height, 100svh);
   overflow: hidden;
-}
-#glyph-intro-root .glyph-portal-intro [data-gp-field] {
-  background: transparent !important;
-  opacity: 1 !important;
 }
 #glyph-intro-root .glyph-portal-intro [data-gp-cover] {
   pointer-events: none;
@@ -84,7 +80,7 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
   border: 1px solid rgba(16,51,47,.2);
   border-radius: 999px;
   background: rgba(251,250,246,.88);
-  color: #10332F;
+  color: #173B32;
   box-shadow: 0 4px 14px rgba(16,51,47,.08), inset 0 1px rgba(255,255,255,.9);
   font: 600 13px/1 "DM Sans", Arial, sans-serif;
   cursor: pointer;
@@ -106,7 +102,7 @@ html[data-glyph-intro="pending"] #glyph-intro-root[data-glyph-active="true"] { b
   border: 1px solid rgba(16,51,47,.22);
   border-radius: 10px;
   background: rgba(251,250,246,.96);
-  color: #10332F;
+  color: #173B32;
   font: 600 11px/1 "DM Sans", Arial, sans-serif;
   box-shadow: 0 3px 14px rgba(16,51,47,.12);
   pointer-events: auto;

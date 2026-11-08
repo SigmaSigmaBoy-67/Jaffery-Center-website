@@ -290,8 +290,9 @@ export default function GlyphPortal({
       if (maskGlyph) maskGlyph.removeAttribute("transform");
       if (foregroundGlyph) {
         foregroundGlyph.setAttribute("transform", transform);
-        foregroundGlyph.style.opacity = String(autoPlay ? 1 - smooth(0.015, 0.17, p) : 1);
+        foregroundGlyph.style.opacity = String(autoPlay ? 1 - smooth(0.03, 0.65, p) : 1);
       }
+      if (portalReveal && autoPlay) field.style.opacity = String(1 - smooth(0.03, 0.75, p));
       marks.setAttribute("transform", transform);
       marks.style.opacity = String(1 - smooth(0.015, 0.17, p));
       choosing = interactive && !autoPlay && !staticMode && p < 0.04;
@@ -528,10 +529,10 @@ export default function GlyphPortal({
         </select></label>
         {front && <div data-gp-front>{front}</div>}
         <span data-gp-fallback aria-hidden="true" style={{ fontFamily, fontWeight: weight }}>{text}</span>
-        <div data-gp-caption>
+        {!autoPlay && <div data-gp-caption>
           <span data-gp-hint aria-hidden="true">{interactive ? "Scroll to enter." : annotations ? "A passage through type" : ""}</span>
           <a data-gp-enter href={`#${uid}-content`}>{enterLabel}<span aria-hidden="true">↘</span></a>
-        </div>
+        </div>}
       </div>
       {!autoPlay && <div data-gp-content id={`${uid}-content`} tabIndex={-1}>
         {children ?? <div><h2 data-gp-default-title>A letter becomes a place.</h2><p data-gp-default-copy>The shape opens onto whatever comes next.</p></div>}

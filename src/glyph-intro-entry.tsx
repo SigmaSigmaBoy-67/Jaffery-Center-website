@@ -14,10 +14,12 @@ function revealSite(focusMain = false, recordSuccess = true) {
   if (finished) return;
   finished = true;
   window.clearTimeout(fallbackTimer);
+  window.clearTimeout((window as typeof window & { __jafferyIntroBootstrapTimer?: number }).__jafferyIntroBootstrapTimer);
   if (recordSuccess && !debugMode) {
     try { sessionStorage.setItem(SESSION_KEY, "done"); } catch { /* session storage can be disabled */ }
   }
   const html = document.documentElement;
+  globalWindow.__jafferyRestorePage?.();
   html.removeAttribute("data-glyph-intro");
   const introRoot = document.getElementById(ROOT_ID);
   if (introRoot) introRoot.style.pointerEvents = "none";
@@ -37,7 +39,7 @@ function revealSite(focusMain = false, recordSuccess = true) {
   });
 }
 
-const globalWindow = window as typeof window & { __jafferyFinishIntro?: (focus?: boolean) => void };
+const globalWindow = window as typeof window & { __jafferyFinishIntro?: (focus?: boolean) => void; __jafferyRestorePage?: () => void };
 globalWindow.__jafferyFinishIntro = (focus = false) => revealSite(focus, true);
 
 const introRoot = document.getElementById(ROOT_ID);
@@ -53,7 +55,7 @@ if (introPending && !window.matchMedia("(prefers-reduced-motion: reduce)").match
     let preferredFontLoaded = false;
     try {
       preferredFontLoaded = await Promise.race([
-        document.fonts?.load('900 120px "DM Sans"', "WELCOME").then(() => true) ?? Promise.resolve(false),
+        document.fonts?.load('900 120px "DM Sans"', "JAFFERY").then(() => true) ?? Promise.resolve(false),
         new Promise<boolean>((resolve) => window.setTimeout(() => resolve(false), 900)),
       ]);
     } catch { /* keep the measured local sans-serif fallback */ }
@@ -74,17 +76,17 @@ if (introPending && !window.matchMedia("(prefers-reduced-motion: reduce)").match
     ) : null;
     const portalProps: GlyphPortalProps = {
       autoPlay: true,
-      autoDuration: 3200,
+      autoDuration: 3000,
       debugMode,
       portalReveal: true,
       showForegroundGlyph: true,
-      focusChar: "E",
+      focusChar: "A",
       fontFamily: measuredFont,
       fontWeight: 900,
-      word: "WELCOME",
+      word: "JAFFERY",
       className: "glyph-portal-intro",
-      background: <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: "transparent" }} />,
-      style: { "--gp-paper": "#FBFAF6", "--gp-ink": "#10332F", "--gp-field": "transparent", "--gp-foreground": "#10332F" },
+      background: <div aria-hidden="true" style={{ position: "absolute", inset: 0, background: "linear-gradient(125deg, #173B32 0%, #214C40 54%, #173B32 100%)" }} />,
+      style: { "--gp-paper": "#F6F1E7", "--gp-ink": "#173B32", "--gp-field": "#173B32", "--gp-foreground": "#173B32" },
       onComplete: () => revealSite(false, true),
       onFailure: () => revealSite(false, false),
       onProgress: (progress) => {

@@ -10,7 +10,7 @@ export default defineConfig({
   server: { host: '0.0.0.0', allowedHosts: true },
   build: {
     rollupOptions: {
-      input: Object.fromEntries(['index', 'about', 'programs', 'sunday-school', 'visit', 'donate'].map(name => [name, resolve(root, `${name}.html`)]))
+      input: Object.fromEntries(['index', 'about', 'community', 'programs', 'sunday-school', 'visit', 'donate'].map(name => [name, resolve(root, `${name}.html`)]))
     }
   }
 })
