@@ -4,6 +4,7 @@ import type { LiquidNavItem } from '@/components/ui/liquid-glass-navbar'
 export const items: LiquidNavItem[] = [
   { label: 'Home', href: 'index.html' },
   { label: 'About', href: 'about.html' },
+  { label: 'Community', href: 'community.html' },
   { label: 'Programs', href: 'programs.html' },
   { label: 'Sunday School', href: 'sunday-school.html' },
   { label: 'Visit & Contact', href: 'visit.html' },

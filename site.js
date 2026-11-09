@@ -1,6 +1,6 @@
 (() => {
   document.querySelectorAll('[data-year]').forEach(el => { el.textContent = new Date().getFullYear(); });
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
   const header = document.querySelector('.site-header');
 
   // Coalesce scroll/layout reads to one per frame; also refresh on resize and bfcache restore.
@@ -19,7 +19,7 @@
 
   // Page links use native navigation. Keep below-fold content visible even if an
   // observer never fires (full-page captures, print, unsupported browsers).
-  if (!reducedMotion && 'IntersectionObserver' in window) {
+  if (!motionPreference.matches && 'IntersectionObserver' in window) {
     const elements = document.querySelectorAll('.reveal');
     elements.forEach(el => {
       if (/\bdelay-\d\b/.test(el.className)) return;
@@ -53,7 +53,7 @@
       tileAnimations.get(tile)?.cancel();
       tileAnimations.delete(tile);
     });
-    const animate = !reducedMotion && typeof Element.prototype.animate === 'function';
+    const animate = !motionPreference.matches && typeof Element.prototype.animate === 'function';
     const before = animate ? new Map(tiles.filter(tile => !tile.hidden).map(tile => [tile, tile.getBoundingClientRect()])) : null;
     tiles.forEach(tile => { tile.hidden = selected !== 'all' && tile.dataset.category !== selected; });
     if (!animate) return;
@@ -68,6 +68,14 @@
       if (frames) tileAnimations.set(tile, tile.animate(frames, { duration: 300, easing: 'cubic-bezier(.22,.9,.25,1)' }));
     });
   }));
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) return;
+    tiles.forEach(tile => {
+      tileAnimations.get(tile)?.cancel();
+      tileAnimations.delete(tile);
+    });
+  });
 
   const copyButton = document.querySelector('[data-copy-address]');
   if (copyButton) {
@@ -97,7 +105,7 @@
       if (click !== latestClick) return;
       copyButton.textContent = copied ? 'Address copied!' : 'Select the address above to copy';
       copyButton.classList.toggle('is-copied', copied);
-      if (!reducedMotion && copyButton.animate) {
+      if (!motionPreference.matches && copyButton.animate) {
         copyButton.animate([{ opacity: .7, transform: 'scale(.98)' }, { opacity: 1, transform: 'none' }], { duration: 220, easing: 'ease-out' });
       }
       const status = document.getElementById('copy-status');
@@ -124,7 +132,7 @@
     if (status) status.textContent = 'Opening an email draft. Please review and send it in your email app; nothing has been sent yet.';
     // Do not disable the button: a visitor with no mail handler must be able to retry.
     const submit = contactForm.querySelector('button[type="submit"]');
-    if (submit && !reducedMotion) {
+    if (submit && !motionPreference.matches) {
       submit.animate([{ transform: 'scale(.98)' }, { transform: 'none' }], { duration: 200 });
     }
     window.location.href = `mailto:jafferycenter@gmail.com?subject=${subject}&body=${body}`;

@@ -1,10 +1,10 @@
 # Jaffery Center of Roanoke — independent website
 
-This folder contains only the six-page Jaffery Center website. The original DeadlineOS application is not included. The mihrab mark currently shown in the header, footer, and favicon from `assets/brand/mihrab-color.svg` is a **proposed presentation**, not an approved organizational identity. The earlier `assets/brand/jc-star.svg` and `assets/brand/jc-favicon.svg` remain available for comparison. This site has **no active online donation destination**: Support Us offers an email inquiry, not a payment link.
+This folder contains the seven-page Jaffery Center website. The original DeadlineOS application is not included. The header, footer, and favicon use the supplied Jaffery Center logo artwork: the extracted monogram is in the header and favicon, and the full lockup is in the footer (`assets/brand/jaffery-center-monogram.png`, `assets/brand/jaffery-center-logo-light.png`). The older exploratory marks remain in `assets/brand/` for reference. This site has **no active online donation destination**: Support Us offers an email inquiry, not a payment link.
 
 ## Develop and verify
 
-Requirements: Node.js 20.19+ (or 22.12+) and Python 3 for content regeneration. On Vercel, the checked-in six HTML pages are used directly, so Python is **not** required in the Vercel build environment.
+Requirements: Node.js 20.19+ (or 22.12+) and Python 3 for content regeneration. On Vercel, the checked-in seven HTML pages are used directly, so Python is **not** required in the Vercel build environment.
 
 ```sh
 npm ci
@@ -15,7 +15,9 @@ npm run build:vercel      # Vite builds the already-generated pages without Pyth
 npm run preview           # Optional local production preview
 ```
 
-Edit content in `build.py`, then run `python3 build.py` locally and commit the six generated HTML files along with the source. Run typecheck, test, and build before publishing. The source of truth is `build.py`; do not edit generated pages alone. Site links are relative `.html` links, so all six routes work from a dedicated project's root. The lazy React footer has a complete static fallback in `build.py`, even with JavaScript off.
+Edit content in `build.py`, then run `python3 build.py` locally and commit the seven generated HTML files along with the source. Run typecheck, test, and build before publishing. The source of truth is `build.py`; do not edit generated pages alone. Site links are relative `.html` links, so all seven routes work from a dedicated project's root. The lazy React footer has a complete static fallback in `build.py`, even with JavaScript off.
+
+The home page is an editorial “House of Light” threshold: `assets/house-of-light.svg` is original layered vector artwork (architecture, sky, separate Blue Ridge planes, floor, and screen). `src/house-scene-entry.ts` moves those independent layers with measured scroll geometry and controls the Dawn/Day/Dusk lighting; it also turns the Sunday School notebook page. The existing JAFFERY glyph portal intro remains mounted on the home page. The Community route adds an interactive adjustable-glass information dashboard (`components/ui/adjustable-glass-dashboard.tsx`) using only the Center facts already on this site—programs, Sunday School, location, and contact; it contains no fabricated finance data or event schedule. The dashboard uses GSAP for restrained view transitions and the locally authored House of Light scene as its background. This repository already has TypeScript, Tailwind, the `@/` alias, and the shadcn-style `/components/ui/` path, so no CLI or framework setup is needed. The supplied Jaffery Center logo files are used for the masthead, favicon, and footer; the two other homepage room scenes are illustrative artwork, explicitly captioned as illustrations rather than photographs. The portal uses Framer Motion; the liquid navigation and its component styles remain in `components/ui/`. Adapted third-party component code and its existing source/license notices are retained in their respective files; the new SVG scene and CSS compositions are original project artwork.
 
 ## Separate GitHub repository and Vercel project
 

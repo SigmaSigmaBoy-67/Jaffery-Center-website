@@ -232,7 +232,7 @@ export default function GlyphPortal({
       // Finish as soon as the measured patch of solid glyph ink can cover the viewport.
       // Going farther carries the glyph past the screen and needs a separate wipe to reveal the page.
       const measuredEndScale = target ? Math.max(W, H) / (target.radius * 2) * 1.15 : startScale;
-      endScale = target ? Math.max(startScale, measuredEndScale) : startScale;
+      endScale = target ? Math.max(startScale, autoPlay ? Math.min(measuredEndScale, 85) : measuredEndScale) : startScale;
       section.dataset.gpFocus = target ? Array.from(text.slice(target.index))[0] : "";
       section.dataset.gpFocusIndex = String(target?.index ?? -1);
       for (const button of buttons) {
@@ -290,8 +290,9 @@ export default function GlyphPortal({
       if (maskGlyph) maskGlyph.removeAttribute("transform");
       if (foregroundGlyph) {
         foregroundGlyph.setAttribute("transform", transform);
-        foregroundGlyph.style.opacity = String(autoPlay ? 1 - smooth(0.015, 0.17, p) : 1);
+        foregroundGlyph.style.opacity = String(autoPlay ? 1 - smooth(0.03, 0.65, p) : 1);
       }
+      if (portalReveal && autoPlay) field.style.opacity = String(1 - smooth(0.03, 0.75, p));
       marks.setAttribute("transform", transform);
       marks.style.opacity = String(1 - smooth(0.015, 0.17, p));
       choosing = interactive && !autoPlay && !staticMode && p < 0.04;
@@ -515,7 +516,7 @@ export default function GlyphPortal({
               <g data-gp-mask-camera><text data-gp-mask-glyph x="0" y="0" fill="black" style={{ fontFamily, fontWeight: weight, fontSize: 100, fontKerning: "none", fontVariantLigatures: "none", letterSpacing: 0 }}>{text}</text></g>
             </mask>}
           </defs>
-          {portalReveal && <rect data-gp-cover x="0" y="0" width="1" height="1" fill="#FAF8F2" mask={`url(#${maskId})`} />}
+          {portalReveal && <rect data-gp-cover x="0" y="0" width="1" height="1" fill="var(--gp-paper)" mask={`url(#${maskId})`} />}
           {showForegroundGlyph && <text data-gp-foreground-glyph x="0" y="0" fill="var(--gp-ink)" style={{ fontFamily, fontWeight: weight, fontSize: 100, fontKerning: "none", fontVariantLigatures: "none", letterSpacing: 0 }}>{text}</text>}
           <g data-gp-marks style={{ visibility: annotations ? "visible" : "hidden" }}><path /></g>
         </svg>
@@ -528,10 +529,10 @@ export default function GlyphPortal({
         </select></label>
         {front && <div data-gp-front>{front}</div>}
         <span data-gp-fallback aria-hidden="true" style={{ fontFamily, fontWeight: weight }}>{text}</span>
-        <div data-gp-caption>
+        {!autoPlay && <div data-gp-caption>
           <span data-gp-hint aria-hidden="true">{interactive ? "Scroll to enter." : annotations ? "A passage through type" : ""}</span>
           <a data-gp-enter href={`#${uid}-content`}>{enterLabel}<span aria-hidden="true">↘</span></a>
-        </div>
+        </div>}
       </div>
       {!autoPlay && <div data-gp-content id={`${uid}-content`} tabIndex={-1}>
         {children ?? <div><h2 data-gp-default-title>A letter becomes a place.</h2><p data-gp-default-copy>The shape opens onto whatever comes next.</p></div>}

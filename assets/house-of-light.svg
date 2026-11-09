@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 1000" preserveAspectRatio="xMidYMid slice" role="img" aria-labelledby="house-title house-description">
+  <title id="house-title">A house of light above the Blue Ridge</title>
+  <desc id="house-description">A contemporary evergreen architectural threshold opens onto layered Blue Ridge ridgelines. Sunlight crosses a stone floor through a geometric screen.</desc>
+  <defs>
+    <clipPath id="opening-clip"><path d="M700 1000V420C700 196 848 72 1090 72S1480 196 1480 420v580Z"/></clipPath>
+    <linearGradient id="wall-shade" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#172c27"/><stop offset=".58" stop-color="#1c3931"/><stop offset="1" stop-color="#10231f"/></linearGradient>
+    <linearGradient id="sky-wash" x2="0" y2="1"><stop stop-color="#8da79d"/><stop offset=".48" stop-color="#d3c6a8"/><stop offset="1" stop-color="#f0d8aa"/></linearGradient>
+    <radialGradient id="solar-halo"><stop stop-color="#fff3cb" stop-opacity=".94"/><stop offset=".2" stop-color="#efd49c" stop-opacity=".4"/><stop offset="1" stop-color="#f1d9a9" stop-opacity="0"/></radialGradient>
+    <linearGradient id="stone-floor" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#c7b896"/><stop offset="1" stop-color="#7a806c"/></linearGradient>
+    <linearGradient id="portal-rim" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#c6a66d" stop-opacity=".12"/><stop offset=".48" stop-color="#f1dca8" stop-opacity=".72"/><stop offset="1" stop-color="#c6a66d" stop-opacity=".14"/></linearGradient>
+    <pattern id="screen-pattern" width="46" height="46" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0V46M23 0V46M0 0H46M0 23H46" fill="none" stroke="#d0b881" stroke-opacity=".62" stroke-width="2"/><path d="M0 0 46 46M46 0 0 46" fill="none" stroke="#172b25" stroke-opacity=".45" stroke-width="1"/></pattern>
+    <filter id="soft-light" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="34"/></filter>
+    <filter id="fine-softness" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="10"/></filter>
+  </defs>
+  <g id="scene-camera">
+    <rect width="1600" height="1000" fill="#0e201c"/>
+    <path d="M0 0h1600v1000H0z" fill="url(#wall-shade)"/>
+    <g clip-path="url(#opening-clip)">
+      <rect id="sky-layer" x="680" y="0" width="840" height="1000" fill="url(#sky-wash)"/>
+      <path id="sky-clouds" d="M715 300c105-42 185-39 258-6 65-52 148-48 218-14 71-31 157-20 252 18v130H715Z" fill="#f4e6c7" opacity=".27"/>
+      <circle id="sun-halo" cx="1115" cy="365" r="215" fill="url(#solar-halo)"/>
+      <g id="solar-group"><circle id="sun-disc" cx="1115" cy="365" r="47" fill="#f6e2b4"/><circle cx="1115" cy="365" r="72" fill="none" stroke="#fff3ce" stroke-opacity=".46" stroke-width="1.5"/></g>
+      <g id="mountain-distant">
+        <path class="ridge ridge-far" d="M610 612 731 519l72 45 147-160 110 96 125-130 125 121 110-93 128 95v240H610Z" fill="#879e91"/>
+        <path d="m739 520 64 44 147-160-5 74-78 89-81-20Z" fill="#b9b7a1" opacity=".58"/>
+        <path d="m1085 500 125-130 125 121-81-47-57 26-53-8Z" fill="#d8d0b7" opacity=".58"/>
+      </g>
+      <g id="mountain-middle">
+        <path class="ridge ridge-mid" d="M590 672 760 573l113 70 122-107 105 74 125-123 146 110 112-72 139 103v189H590Z" fill="#58766a"/>
+        <path d="m873 643 122-107 105 74-92-34-55 55Z" fill="#9eaa91" opacity=".48"/>
+        <path d="m1225 587 125-100 146 110-91-35-70 26Z" fill="#9eaa91" opacity=".46"/>
+      </g>
+      <g id="mountain-near">
+        <path class="ridge ridge-near" d="M575 736 750 667l111 47 146-85 111 68 147-77 136 86 129-50 166 82v160H575Z" fill="#334f46"/>
+        <path d="m1007 629 111 68 147-77-101 78-86-16-74 32Z" fill="#759080" opacity=".65"/>
+        <path d="M626 750c90-71 170-81 255-37 80-67 153-59 218-21 73-59 153-57 230-11" fill="none" stroke="#c5bd9f" stroke-opacity=".35" stroke-width="3"/>
+      </g>
+      <path d="M700 724h780v276H700Z" fill="url(#stone-floor)"/>
+      <path d="M700 752h780M700 824h780M700 906h780M700 960h780" stroke="#243c33" stroke-opacity=".36" stroke-width="2"/>
+      <path d="M862 1000 1067 725l164 275Z" fill="#e5d5af" opacity=".2"/>
+      <g id="screen-shadow" opacity=".4">
+        <path d="m1110 682 370 155v31l-370-142Z" fill="#172721"/>
+        <path d="m1110 730 370 173v25l-370-161Z" fill="#172721"/>
+        <path d="M1110 776h370v18h-370Z" fill="#172721" opacity=".42"/>
+      </g>
+      <g id="floor-lines" fill="none" stroke="#e6d6b3" stroke-opacity=".4" stroke-width="2">
+        <path d="M1090 735 860 1000M1150 735l120 265M1060 813h307M990 900h466M923 964h548"/>
+      </g>
+      <g id="small-pines" fill="#243c33" opacity=".72">
+        <path d="m734 681 18-52 18 52h-12l18 40h-48l18-40Zm68 30 16-45 16 45h-10l15 32h-42l15-32Zm437-31 16-48 16 48h-10l15 34h-42l15-34Zm77 29 20-55 20 55h-13l18 38h-50l18-38Z"/>
+      </g>
+    </g>
+    <g id="architecture">
+      <path class="wall-field" fill="url(#wall-shade)" fill-rule="evenodd" d="M0 0h1600v1000H0z M700 1000V420C700 196 848 72 1090 72S1480 196 1480 420v580Z"/>
+      <path d="M665 1000V418C665 164 835 34 1090 34S1515 164 1515 418v582" fill="none" stroke="#6d8575" stroke-opacity=".36" stroke-width="3"/>
+      <path d="M681 1000V419C681 183 842 53 1090 53s409 130 409 366v581" fill="none" stroke="url(#portal-rim)" stroke-width="8"/>
+      <path d="M700 1000V420C700 196 848 72 1090 72S1480 196 1480 420v580" fill="none" stroke="#d3ba82" stroke-opacity=".44" stroke-width="2"/>
+      <path d="M0 0h500v1000H0Zm1515 0h85v1000h-85Z" fill="#10211d" opacity=".28"/>
+      <path d="M0 792h488v208H0Zm1510 0h90v208h-90Z" fill="#172c27" opacity=".88"/>
+      <g fill="none" stroke="#af9564" stroke-opacity=".36">
+        <path d="M48 78h440v606H48zM72 102h392v558H72zM1115 100h278v172h-278zM1140 125h228v120h-228z" stroke-width="2"/>
+        <path d="M0 714h496M1508 714h92M0 742h496M1508 742h92M0 957h490M1510 957h90" stroke-width="3"/>
+        <path d="M175 80v602m154-602v602m101-602v602M1212 101v171m84-171v171" stroke-width="1" opacity=".52"/>
+      </g>
+      <g id="arch-light" opacity=".56">
+        <path d="M700 426C700 199 850 72 1090 72s390 127 390 354" fill="none" stroke="#e8cb8a" stroke-width="16" stroke-opacity=".23" filter="url(#soft-light)"/>
+        <path d="M700 424C700 200 850 74 1090 74s390 126 390 350" fill="none" stroke="#efd8a5" stroke-width="3" stroke-opacity=".7"/>
+      </g>
+      <g id="left-pilaster">
+        <path d="M535 1000V469c0-46 29-79 74-84l46-5v620Z" fill="#223c33"/>
+        <path d="M574 1000V473c0-20 14-39 36-42l25-3v572Z" fill="#385448"/>
+        <path d="M535 472h120M530 517h125M520 950h137" stroke="#c0a36a" stroke-opacity=".6" stroke-width="5"/>
+        <path d="M547 471v481m91-478v476" stroke="#e0c88f" stroke-opacity=".38" stroke-width="2"/>
+      </g>
+      <g id="right-pilaster">
+        <path d="M1426 380 1470 384c45 4 74 38 74 84v532h-118Z" fill="#1a3029"/>
+        <path d="m1440 402 25 3c22 3 36 22 36 42v553h-61Z" fill="#354f43"/>
+        <path d="M1410 472h125M1406 517h130M1408 950h132" stroke="#c0a36a" stroke-opacity=".56" stroke-width="5"/>
+        <path d="M1430 404v548m93-530v530" stroke="#e0c88f" stroke-opacity=".34" stroke-width="2"/>
+      </g>
+      <path d="M0 0h1600v28H0z" fill="#12221e" opacity=".8"/>
+      <path d="M0 28h1600" stroke="#c4a56c" stroke-opacity=".2" stroke-width="2"/>
+    </g>
+    <g id="geometric-screen">
+      <path d="M1280 650h225v350h-225z" fill="#142a24" fill-opacity=".6" stroke="#c5a86f" stroke-opacity=".72" stroke-width="4"/>
+      <path d="M1293 663h199v324h-199z" fill="url(#screen-pattern)" opacity=".84"/>
+      <path d="M1264 642h257v16h-257zm0 350h257v16h-257z" fill="#b69a63" opacity=".82"/>
+      <path d="M1279 636v370m227-370v370" stroke="#d3bb87" stroke-opacity=".68" stroke-width="4"/>
+    </g>
+    <g id="foreground-detail" fill="none" stroke="#d0b47d" stroke-opacity=".46">
+      <path d="M0 1000h1600M0 982h1600" stroke-width="3"/>
+      <path d="M72 0v1000M1528 0v1000" stroke-width="2" opacity=".35"/>
+      <path d="M50 905h410m1110 0h-60M40 925h425m1110 0h-74" stroke-width="2"/>
+    </g>
+  </g>
+</svg>
