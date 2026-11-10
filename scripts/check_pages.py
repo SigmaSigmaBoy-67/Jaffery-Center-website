@@ -5,8 +5,6 @@ import json
 
 ROOT = Path(__file__).resolve().parent.parent
 PAGES = ('index', 'about', 'community', 'programs', 'sunday-school', 'visit', 'donate')
-INTRO_SOURCE = (ROOT / 'src/glyph-intro-entry.tsx').read_text(encoding='utf-8')
-PORTAL_SOURCE = (ROOT / 'components/ui/glyph-portal.tsx').read_text(encoding='utf-8')
 
 
 class Page(HTMLParser):
@@ -73,7 +71,8 @@ for name in PAGES:
     if name == 'visit':
         assert 'method=\"post\"' in text and 'mailto:jafferycenter@gmail.com' in text
     if name == 'index':
-        assert 'glyph-intro-root' in page.ids and '/src/glyph-intro-entry.tsx' in text
+        assert 'glyph-intro-root' not in page.ids and '/src/glyph-intro-entry.tsx' not in text
+        assert 'data-glyph-intro' not in text and 'data-gp-skip' not in text
         assert 'threshold-run' in page.ids and 'threshold-stage' in page.ids and 'house-scene' in page.ids
         assert '/src/house-scene-entry.ts' in text and 'assets/house-of-light.svg' in (ROOT / 'build.py').read_text()
         scene = (ROOT / 'assets/house-of-light.svg').read_text(encoding='utf-8')
@@ -85,27 +84,6 @@ for name in PAGES:
         assert 'Blue Ridge' in text and '3031 Preston Avenue' in text
         assert 'home-scroll-experience-root' not in page.ids and '/src/home-experience-entry.tsx' not in text
         assert 'courtyard-art' not in text and 'parallax' not in text.lower()
-        assert 'jaffery-glyph-intro-v1' in text and 'prefers-reduced-motion: reduce' in text
-        assert 'data-gp-skip' in text and '#F6F1E7' in text
-        assert '15000' in text and 'body > main' in text and 'window.__jafferyRestorePage' in text
-        assert 'sessionStorage.setItem(k,"done")' in text and '"started"' not in text
-        assert 'import.meta.env.DEV' in INTRO_SOURCE and 'introDebug' in INTRO_SOURCE
-        assert 'className: "glyph-portal-intro"' in INTRO_SOURCE
-        assert 'showForegroundGlyph: true' in INTRO_SOURCE and 'front: <h1' not in INTRO_SOURCE
-        assert 'word: "JAFFERY"' in INTRO_SOURCE
-        assert 'glyph-intro-react-root' in text
-        assert 'data-gp-foreground-glyph' in PORTAL_SOURCE
-        assert 'foregroundGlyph.setAttribute("transform", transform)' in PORTAL_SOURCE
-        assert 'maskCamera.setAttribute("transform", transform)' in PORTAL_SOURCE
-        assert 'data-gp-cover' in PORTAL_SOURCE and 'data-gp-exit-aperture' not in PORTAL_SOURCE
-        assert 'mask={`url(#${maskId})`}' in PORTAL_SOURCE
-        assert '{!autoPlay && <div data-gp-caption>' in PORTAL_SOURCE
-        assert 'Math.max(W, H) / (target.radius * 2) * 1.15' in PORTAL_SOURCE
-        assert 'completionRaf = requestAnimationFrame(() => { completionRaf = 0; complete(); })' in PORTAL_SOURCE
-        assert 'setTimeout(() => revealSite(false, false), 12000)' in INTRO_SOURCE
-        assert 'fallbackTimer = window.setTimeout(() => revealSite(false, false), 20000)' in INTRO_SOURCE
-        assert 'Math.min(50, Math.max(0, now - lastAutoFrameAt))' in PORTAL_SOURCE
-        assert '[0, 25, 50, 75, 90, 100]' in INTRO_SOURCE
     else:
         assert 'glyph-intro-root' not in page.ids and 'glyph-intro-entry.tsx' not in text, name
     assert '/src/footer-entry.tsx' not in text and 'site-footer' in text and page.footer_config, name
