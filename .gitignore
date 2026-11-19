@@ -1,5 +1,8 @@
 node_modules/
 dist/
-*.tsbuildinfo
 __pycache__/
-standalone-export/
+.art-work/
+captures/
+.preview.log
+.test.log
+.build.log

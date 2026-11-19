@@ -1,29 +1,27 @@
-# Jaffery Center of Roanoke — independent website
+# Jaffery Center of Roanoke
 
-This folder contains the seven-page Jaffery Center website. The original DeadlineOS application is not included. The header, footer, and favicon use the supplied Jaffery Center logo artwork: the extracted monogram is in the header and favicon, and the full lockup is in the footer (`assets/brand/jaffery-center-monogram.png`, `assets/brand/jaffery-center-logo-light.png`). The older exploratory marks remain in `assets/brand/` for reference. This site has **no active online donation destination**: Support Us offers an email inquiry, not a payment link.
+Website for the Jaffery Center of Roanoke, 3031 Preston Avenue NW, Roanoke, VA. Eight static pages built with Vite and deployed on Vercel.
 
-## Develop and verify
+## Design
 
-Requirements: Node.js 20.19+ (or 22.12+) and Python 3 for content regeneration. On Vercel, the checked-in seven HTML pages are used directly, so Python is **not** required in the Vercel build environment.
+A two-ink risograph programme sheet. Cool paper, forest-black ink (from the center's monogram), one vermilion spot ink. The hero mihrab is drawn in code and dithered with the vault dot-dither rules (fixed dot grid, none/small/big dot per cell, one ink per layer, stepped at 8 fps, reduced-motion draws once): `art.js` on the kit in `scripts/dotdither.js`. Type: Big Shoulders Display, Satoshi, Space Mono, Amiri Quran. Design notes are in `PRODUCT.md` and `.planning/`.
+
+## Work on it
+
+Requires Node 20.19+ (or 22.12+) and Python 3.
 
 ```sh
 npm ci
-npm run typecheck
-npm test
-npm run build             # Python regenerates pages from build.py, then Vite builds dist/
-npm run build:vercel      # Vite builds the already-generated pages without Python
-npm run preview           # Optional local production preview
+npm run dev       # regenerates pages from build.py, then Vite dev server
+npm test          # page, link and content checks
+npm run build     # regenerate pages, then build dist/
 ```
 
-Edit content in `build.py`, then run `python3 build.py` locally and commit the seven generated HTML files along with the source. Run typecheck, test, and build before publishing. The source of truth is `build.py`; do not edit generated pages alone. Site links are relative `.html` links, so all seven routes work from a dedicated project's root. The lazy React footer has a complete static fallback in `build.py`, even with JavaScript off.
+Edit copy in `build.py`, run `python3 build.py`, and commit the generated HTML with it. Vercel runs `npm run build:vercel` (Vite only), so Python is not needed there.
 
-The home page is an editorial “House of Light” threshold: `assets/house-of-light.svg` is original layered vector artwork (architecture, sky, separate Blue Ridge planes, floor, and screen). `src/house-scene-entry.ts` moves those independent layers with measured scroll geometry and controls the Dawn/Day/Dusk lighting; it also turns the Sunday School notebook page. The home page now opens directly into the House of Light scene. The JAFFERY glyph portal, intro entrypoint, and intro stylesheet have been removed from the website and source. The Community route adds an interactive adjustable-glass information dashboard (`components/ui/adjustable-glass-dashboard.tsx`) using only the Center facts already on this site—programs, Sunday School, location, and contact; it contains no fabricated finance data or event schedule. The dashboard uses GSAP for restrained view transitions and the locally authored House of Light scene as its background. This repository already has TypeScript, Tailwind, the `@/` alias, and the shadcn-style `/components/ui/` path, so no CLI or framework setup is needed. The supplied Jaffery Center logo files are used for the masthead, favicon, and footer; the two other homepage room scenes are illustrative artwork, explicitly captioned as illustrations rather than photographs. Framer Motion remains available to the retained optional parallax component; the liquid navigation and its component styles remain in `components/ui/`. Adapted third-party component code and its existing source/license notices are retained in their respective files; the new SVG scene and CSS compositions are original project artwork.
+## Facts and what is not here
 
-## Separate GitHub repository and Vercel project
-
-1. **Only after the organization approves the repository owner/name and visibility**, create a new empty repository for this directory. Do not import it into the existing DeadlineOS repository's `main` branch. Do not delete or overwrite the current DeadlineOS project or PR.
-2. In this exported directory, initialize Git and push this directory's contents to the new repository. This export script intentionally creates no Git history or remote.
-3. In Vercel, **create a new project** linked to the new repository; do not attach it to the existing DeadlineOS Vercel project. Framework: Vite; Root Directory: repository root; Install: `npm ci`; Build: `npm run build:vercel`; Output Directory: `dist`. These settings are in `vercel.json` in this exported folder, not in the DeadlineOS root.
-4. Review the Vercel-generated preview URL first. **Do not attach the organization's official domain** until the organization approves the content, proposed logo, and deployment. To add confirmed online donations later, obtain written confirmation of the exact destination and implement/test it in a separate change.
-
-A Vercel preview is not an official-domain launch. The contact form opens an email draft on the visitor's device; it does not transmit data from the website. No prayer timetable, event date, public opening hours, or payment account is fabricated.
+- Content comes from this repo's earlier pages and the center's previous site (https://www.jafferycenter.org). Muharram 2026 (June 16 to 28, 2026) is shown as a past program.
+- Donation links (PayPal, Venmo) are the ones on the center's previous site. The Zelle code is only a QR image there, so this site links to it and shows no Zelle address.
+- There is no photograph of the center on the web. The hero is an original illustration and is captioned as one.
+- Contact links are `mailto:` links. Nothing is sent or stored by the site.
