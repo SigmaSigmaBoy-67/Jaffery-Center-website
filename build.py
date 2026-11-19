@@ -1,173 +1,454 @@
-"""Generate the static pages. Run `python3 build.py` after editing content here."""
-from pathlib import Path
+"""Generate the static pages. Content lives here. Run `python3 build.py` after editing, then commit the HTML."""
 from html import escape
-import json
-import subprocess
+from pathlib import Path
+from urllib.parse import quote
 
-PAGES = [('index.html', 'Home'), ('about.html', 'About'), ('community.html', 'Community'), ('programs.html', 'Programs'), ('sunday-school.html', 'Sunday School'), ('visit.html', 'Visit & Contact'), ('donate.html', 'Give')]
-HOUSE_SCENE_SVG = (Path(__file__).parent / 'assets/house-of-light.svg').read_text(encoding='utf-8')
-MAP_URL = 'https://www.google.com/maps/search/?api=1&amp;query=3031+Preston+Avenue+Roanoke+VA+24012'
+ROOT = Path(__file__).parent
+SITE = 'Jaffery Center of Roanoke'
 EMAIL = 'jafferycenter@gmail.com'
-INVOCATION = 'بِسْمِ ٱللَّٰهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ'
-WHATSAPP_MAIL = 'mailto:jafferycenter@gmail.com?subject=WhatsApp%20Group%20Request&amp;body=Full%20name%3A%0AMobile%20number%3A%0ACity%20and%20state%3A%0AA%20brief%20introduction%3A%0AHow%20you%20heard%20about%20us%3A%0AWhat%20you%20hope%20to%20find%20in%20the%20community%3A'
+ADDRESS_1 = '3031 Preston Avenue NW'
+ADDRESS_2 = 'Roanoke, VA 24012'
+MAP_URL = 'https://www.google.com/maps/search/?api=1&query=3031+Preston+Avenue+NW+Roanoke+VA+24012'
+ORIGINAL = 'https://www.jafferycenter.org'
+PAYPAL = 'https://www.paypal.com/donate/?cmd=_s-xclick&hosted_button_id=G4QYMJA5YGT8G&source=url'
+VENMO = 'https://venmo.com/code?user_id=4614352028042942654&created=1780858500.261365&printed=1'
+SIGNUP = 'https://grasshoppersignup.com/s/rrjq9a'
+YOUTUBE = 'https://www.youtube.com/@jafferycenter5663'
+PARENTS = ORIGINAL + '/sunday-school/parents-guide'
+BLOG = ORIGINAL + '/blog'
+POSTS = [
+    ('a-simple-introduction-to-islam', 'A Simple Introduction to Islam'),
+    ('we-live-in-a-world-that-is-louder-than-ever', 'We live in a world that is louder than ever'),
+    ('what-religion-does-to-a-person', 'What Religion Does to a Person'),
+    ('what-is-ashura-and-why-it-still-matters-today', 'What is Ashura, and Why it Still Matters Today'),
+    ('how-to-reward-your-child-for-learning', 'How to Reward Your Child for Learning'),
+    ('how-to-lock-an-iphone-to-one-app-for-kids-using-guided-access', 'How to Lock an iPhone to One App for Kids Using “Guided Access”'),
+    ('why-teaching-your-child-to-read-early-is-the-best-investment', 'Why Teaching Your Child to Read Early Is the Best Investment'),
+    ('how-to-raise-a-child-who-naturally-loves-the-quran', 'How to Raise a Child Who Naturally Loves the Quran'),
+]
+NAV = [('programs.html', 'Programs'), ('sunday-school.html', 'Sunday School'), ('community.html', 'Community'),
+       ('about.html', 'About'), ('visit.html', 'Visit')]
 
-def icon(name, cls=''):
-    return f'<svg class="icon {cls}" aria-hidden="true"><use href="#i-{name}"/></svg>'
 
-def button(label, url, style='dark', external=False):
-    ext = ' target="_blank" rel="noopener noreferrer"' if external else ''
-    return f'<a class="btn btn-{style}" href="{url}"{ext}>{label} {icon("arrow")}</a>'
+def mailto(subject, body=''):
+    q = f'subject={quote(subject)}' + (f'&body={quote(body)}' if body else '')
+    return f'mailto:{EMAIL}?{q}'
 
-def link(label, url):
-    return f'<a class="link" href="{url}">{label} {icon("arrow")}</a>'
 
-SPRITE = '''<svg aria-hidden="true" style="position:absolute;width:0;height:0;overflow:hidden" xmlns="http://www.w3.org/2000/svg">
-<symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16m-6-6 6 6-6 6"/></symbol>
-<symbol id="i-pin" viewBox="0 0 24 24"><path d="M20 10c0 5-8 11-8 11S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></symbol>
-<symbol id="i-book" viewBox="0 0 24 24"><path d="M12 6c-3-2-7-2-10-1v14c4-1 7-1 10 1 3-2 6-2 10-1V5c-3-1-7-1-10 1Zm0 0v14"/></symbol>
-<symbol id="i-heart" viewBox="0 0 24 24"><path d="M20.8 5.8a5.2 5.2 0 0 0-7.3 0L12 7.3l-1.5-1.5a5.2 5.2 0 0 0-7.3 7.4L12 21l8.8-8a5.2 5.2 0 0 0 0-7.2Z"/></symbol>
-<symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2H3Zm13-15a3 3 0 0 1 0 6m2 3a5 5 0 0 1 3 5v1h-4"/></symbol>
-<symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 16.5A8.5 8.5 0 0 1 7.5 4 8.5 8.5 0 1 0 20 16.5Z"/><path d="M17 3v4m-2-2h4"/></symbol>
-<symbol id="i-mail" viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m3 6 9 7 9-7"/></symbol>
-<symbol id="i-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></symbol>
-<symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
-<symbol id="i-close" viewBox="0 0 24 24"><path d="M5 5 19 19M19 5 5 19"/></symbol>
-<symbol id="i-star" viewBox="0 0 32 32"><path d="M16 2 20 12 30 16 20 20 16 30 12 20 2 16 12 12Z"/><circle cx="16" cy="16" r="4"/></symbol>
-</svg>'''
+WHATSAPP = mailto('WhatsApp Group Request', 'Full name:\nMobile number:\nCity and state:\nA little about me and my family:')
 
-def brand(reversed=False):
-    if reversed:
-        return '<a href="index.html" class="brand" title="Jaffery Center home"><img class="brand-symbol" src="assets/brand/jaffery-center-logo-light.png" alt="Jaffery Center of Roanoke" width="110" height="95"></a>'
-    return '<a href="index.html" class="brand" title="Jaffery Center home"><img class="brand-symbol" src="assets/brand/jaffery-center-monogram.png" alt="" width="44" height="44"><span class="brand-text">Jaffery Center<small>of Roanoke</small></span></a>'
+MONO = '<img class="mark" src="assets/brand/jaffery-center-monogram.png" width="46" height="46" alt="">'
 
-_nav_markup = None
+# the mihrab, as two dithered ink layers; wide crop on desktop, tall crop on phones
+# per page: where the arch sits across the strip (ox), how far down the scene the window slides (oy, in arch
+# radii), mirror, and the noise seed. Every page shows a different part of the same arch.
+POS = {'programs.html': (.40, -.70, 1, 3), 'muharram.html': (.60, .05, 1, 7), 'sunday-school.html': (.62, .90, 1, 13),
+       'community.html': (.42, 1.40, -1, 19), 'about.html': (.55, .40, 1, 23), 'visit.html': (.50, 2.20, 1, 29),
+       'donate.html': (.58, -.10, -1, 31)}
+
+
+ART_LAYERS = '<div class="dots a"></div><div class="dots b"></div>'   # art.js paints these with the dot-dither kit
+
+
+def fix_levels(body):
+    """A page whose first sub-heading is an h3 under the h1 gets h2 instead, so the outline never skips a level."""
+    i3, i2 = body.find('<h3'), body.find('<h2')
+    if i3 != -1 and (i2 == -1 or i3 < i2):
+        body = body.replace('<h3', '<h2').replace('</h3>', '</h2>')
+    return body
+
+
+def strip(file):
+    ox, oy, flip, seed = POS.get(file, (.5, 0, 1, 1))
+    return (f'<div class="strip art-box" aria-hidden="true" data-art="strip" data-ox="{ox}" data-oy="{oy}" '
+            f'data-flip="{flip}" data-seed="{seed}">{ART_LAYERS}</div>')
+
+
+ARROW = '<svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.2"/></svg>'
+
+
+def _where():
+    return (f'<p class="where"><strong>{ADDRESS_1}, {ADDRESS_2}</strong> '
+            f'<a class="tlink" href="{MAP_URL}" target="_blank" rel="noopener noreferrer">Directions{ARROW}</a></p>')
+
+
+def a(label, href, cls='', ext=False):
+    extra = ' target="_blank" rel="noopener noreferrer"' if ext else ''
+    c = f' class="{cls}"' if cls else ''
+    return f'<a{c} href="{escape(href)}"{extra}>{label}</a>'
+
+
+def btn(label, href, kind='primary', ext=False):
+    return a(f'{label}{ARROW}', href, f'btn btn-{kind}', ext)
+
+
+CUR = ' aria-current="page"'
+
 
 def header(active):
-    global _nav_markup
-    if _nav_markup is None:
-        rendered = subprocess.run(['node', '--import', 'tsx', 'src/render-nav.tsx'], check=True, capture_output=True, text=True)
-        _nav_markup = json.loads(rendered.stdout)
-    label = 'Support us' if active == 'Give' else active
-    fallback_links = ''.join(f'<a href="{path}">{"Support us" if text == "Give" else text}</a>' for path, text in PAGES)
-    return f'''<a class="skip" href="#main">Skip to content</a><header class="site-header"><div class="wrap navrow">{brand()}<div id="liquid-nav-root" class="liquid-nav-root">{_nav_markup[label]}</div></div><noscript><style>.mobile-menu-button{{display:none!important}}@media(max-width:1020px){{.nojs-nav{{display:grid!important}}}}</style><nav class="nojs-nav" aria-label="Navigation without JavaScript">{fallback_links}</nav></noscript></header>'''
+    links = ''.join(
+        f'<li><a href="{h}"{CUR if h == active else ""}>{t}</a></li>' for h, t in NAV)
+    give_cur = ' aria-current="page"' if active == 'donate.html' else ''
+    return f'''<a class="skip" href="#main">Skip to content</a>
+<header class="bar">
+  <div class="wrap bar-in">
+    <a class="brand" href="index.html" aria-label="{SITE}, home">{MONO}<span class="brand-name">Jaffery Center<small>of Roanoke</small></span></a>
+    <nav class="nav" aria-label="Main">
+      <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-list">Menu</button>
+      <ul id="nav-list">{links}<li class="nav-give"><a class="btn btn-line btn-sm" href="donate.html"{give_cur}>Give</a></li></ul>
+    </nav>
+  </div>
+</header>'''
+
 
 def footer():
-    static_footer = f'''<footer class="site-footer"><div class="footer-arch" aria-hidden="true"></div><div class="wrap"><div class="footer-grid"><div>{brand(True)}<p>Faith, family, and community in Roanoke, Virginia. Everyone is welcome.</p><p class="footer-invocation" lang="ar" dir="rtl">{INVOCATION}</p></div><div><h3>Explore</h3><div class="footer-links"><a href="index.html">Home</a><a href="about.html">About us</a><a href="community.html">Community guide</a><a href="programs.html">Programs</a><a href="sunday-school.html">Sunday School</a><a href="visit.html">Visit & contact</a><a href="donate.html">Support us</a></div></div><div><h3>Find us</h3><div class="footer-links"><span>3031 Preston Avenue<br>Roanoke, VA 24012</span><a href="mailto:{EMAIL}">{EMAIL}</a><a href="{MAP_URL}" target="_blank" rel="noopener noreferrer">Get directions ↗</a></div></div></div><div class="footer-bottom"><span>© <span data-year>2026</span> Jaffery Center of Roanoke.</span><span>Made with care for our community.</span></div></div></footer>'''
-    labels = {'About': 'About us', 'Visit & Contact': 'Visit & contact', 'Give': 'Support us'}
-    config = {
-        'heading': 'Faith, family, *community.*',
-        'subheading': 'Everyone is welcome at the Jaffery Center of Roanoke.',
-        'cta': {'label': 'Explore our programs', 'href': 'programs.html'},
-        'tagline': 'Faith, family, and community in Roanoke, Virginia. Everyone is welcome.',
-        'invocation': INVOCATION,
-        'explore': [{'label': labels.get(label, label), 'href': path} for path, label in PAGES],
-        'find': [
-            {'label': '3031 Preston Avenue, Roanoke, VA 24012', 'href': MAP_URL.replace('&amp;', '&'), 'external': True},
-            {'label': EMAIL, 'href': f'mailto:{EMAIL}'},
-            {'label': 'Get directions ↗', 'href': MAP_URL.replace('&amp;', '&'), 'external': True},
-        ],
-    }
-    config_attr = escape(json.dumps(config, ensure_ascii=False), quote=True)
-    return f'<div id="footer-root" data-config="{config_attr}">{static_footer}</div>'
-
-def hero(title, description, current):
-    return f'''<section class="page-hero"><div class="wrap"><div class="crumb"><a href="index.html">Home</a> &nbsp;/&nbsp; {current}</div><h1>{title}</h1><p>{description}</p></div></section>'''
-
-def page(filename, title, description, body, active):
-    is_home = filename == 'index.html'
-    dashboard_styles = '<link rel="stylesheet" href="components/ui/adjustable-glass-dashboard.css">' if filename == 'community.html' else ''
-    dashboard_entry = '<script type="module" src="/src/community-entry.tsx"></script>' if filename == 'community.html' else ''
-    home_entry = ''
-    theme_color = '#173B32'
-    page_class = 'page-home' if is_home else 'page-' + filename.removesuffix('.html')
-    scene_entry = '<script type="module" src="/src/house-scene-entry.ts"></script>' if is_home else ''
-    html = f'''<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="{theme_color}"><meta name="description" content="{escape(description, quote=True)}"><title>{escape(title)} | Jaffery Center of Roanoke</title><link rel="icon" type="image/png" href="assets/brand/jaffery-center-monogram.png"><link rel="preload" href="assets/fonts/dm-sans-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="preload" href="assets/fonts/cormorant-garamond-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="components/ui/liquid-glass-navbar.css"><link rel="stylesheet" href="brand-theme.css">{dashboard_styles}<script type="module" src="/src/navbar-entry.tsx"></script><script type="module" src="/site.js"></script>{dashboard_entry}{home_entry}</head><body class="{page_class}">{SPRITE}{header(active)}<main id="main">{body}</main>{footer()}{scene_entry}{home_entry}</body></html>'''
-    Path(filename).write_text(html, encoding='utf-8')
-
-def feature(title, text, label, destination, glyph, delay=''):
-    return f'''<article class="feature-card glass--frosted reveal {delay}"><span class="feature-icon">{icon(glyph)}</span><h3>{title}</h3><p>{text}</p>{link(label,destination)}</article>'''
-
-home = f'''
-<section class="threshold-run" id="threshold-run" aria-label="A house of light, opening onto the Blue Ridge">
-  <div class="threshold-stage" id="threshold-stage">
-    <div class="house-scene" id="house-scene" data-time="day">{HOUSE_SCENE_SVG}</div>
-    <div class="house-shade" aria-hidden="true"></div>
-    <div class="house-lockup" id="house-lockup">
-      <p class="house-kicker"><span>JAFFERY CENTER</span><i></i><span>ROANOKE, VIRGINIA</span></p>
-      <h1 id="house-headline"><span class="headline-line">A place</span><span class="headline-line headline-italic">to belong.</span></h1>
-      <p class="house-lede">Faith, learning, and the joy of coming together. Everyone is welcome.</p>
-      <div class="house-actions">{button('Explore the center','#gather','light')}{button('Plan a visit','visit.html','line-light')}</div>
-      <p class="house-location">3031 Preston Avenue <span>·</span> Roanoke, Virginia 24012</p>
+    return f'''<footer class="foot">
+  <div class="wrap foot-in">
+    <div class="foot-name">
+      <img class="foot-mark" src="assets/brand/mihrab-reverse.svg" width="56" height="56" alt="">
+      <p class="foot-big">Jaffery Center<br>of Roanoke</p>
     </div>
-    <div class="house-controls" role="group" aria-label="Artistic scene lighting">
-      <span class="house-controls-label">Light study</span>
-      <button type="button" data-scene-time="dawn" aria-pressed="false">Dawn</button>
-      <button type="button" data-scene-time="day" aria-pressed="true">Day</button>
-      <button type="button" data-scene-time="dusk" aria-pressed="false">Dusk</button>
+    <address class="foot-col">
+      <p class="label">Find us</p>
+      <p><span class="nw">{ADDRESS_1}</span><br>{ADDRESS_2}</p>
+      <p>{a(EMAIL, 'mailto:' + EMAIL)}</p>
+      <p>{a('Open in Maps', MAP_URL, '', True)}</p>
+    </address>
+    <div class="foot-col">
+      <p class="label">The center</p>
+      <ul class="plain">
+        <li>{a('Programs', 'programs.html')}</li><li>{a('Muharram 2026', 'muharram.html')}</li><li>{a('Sunday School', 'sunday-school.html')}</li>
+        <li>{a('Community', 'community.html')}</li><li>{a('About', 'about.html')}</li><li>{a('Visit and contact', 'visit.html')}</li><li>{a('Give', 'donate.html')}</li>
+      </ul>
     </div>
-    <div class="threshold-next" aria-hidden="true"><span>THE WELCOME CONTINUES</span><strong>Faith · Learning · Community</strong></div>
-    <a class="scroll-invitation" href="#gather"><span>Scroll to enter</span><i></i></a>
+    <div class="foot-col">
+      <p class="label">Elsewhere</p>
+      <ul class="plain">
+        <li>{a('Blog', BLOG, '', True)}</li><li>{a('Parents Guide', PARENTS, '', True)}</li><li>{a('YouTube', YOUTUBE, '', True)}</li><li>{a('Previous website', ORIGINAL, '', True)}</li>
+      </ul>
+    </div>
+  </div>
+  <div class="wrap foot-end">
+    <p class="label">Nonprofit 501(c)(3) · EIN 81-1064023 · © 2026 {SITE}</p>
+  </div>
+</footer>'''
+
+
+def page(file, title, desc, body, bodyclass=''):
+    return f'''<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{escape(title)} | {SITE}</title>
+<meta name="description" content="{escape(desc)}">
+<meta name="theme-color" content="#E7EAE5">
+<meta property="og:title" content="{escape(title)} | {SITE}">
+<meta property="og:description" content="{escape(desc)}">
+<meta property="og:image" content="https://jaffery-center-website.vercel.app/og.jpg">
+<link rel="icon" href="assets/brand/jc-favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Big+Shoulders+Display:wght@700;800&family=Space+Mono&display=swap">
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap">
+<link rel="stylesheet" href="styles.css">
+<noscript><style>.art-box{{background:radial-gradient(circle,var(--ink) 1.3px,transparent 1.7px) 0 0/9px 9px,var(--paper)}}</style></noscript>
+</head>
+<body class="{bodyclass}">
+{header(file if file != 'muharram.html' else 'programs.html')}
+<main id="main">
+{fix_levels(body).replace('<!--STRIP-->', strip(file))}
+</main>
+{footer()}
+<script type="module" src="site.js"></script>
+</body>
+</html>
+'''
+
+
+WHERE = _where()
+
+
+def hero_head(h1, lede, actions=''):
+    return f'''<section class="phead">
+  <div class="wrap">
+    <h1 class="display">{h1}</h1>
+    <div class="phead-side"><p class="lede">{lede}</p>{WHERE}{('<div class="actions">' + actions + '</div>') if actions else ''}</div>
   </div>
 </section>
-<section class="gathering-intro" id="gather">
-  <div class="wrap gathering-intro-grid">
-    <div class="chapter-marker"><span>01 / 03</span><span>THE CENTER</span></div>
-    <div class="gathering-intro-copy reveal"><p class="eyebrow">A place to gather</p><h2 class="line-reveal"><span class="line-mask"><span>A house of light.</span></span><span class="line-mask"><span><em>A home for community.</em></span></span></h2><p>Jaffery Center is a welcoming Shia Muslim community in Roanoke, bringing people together through faith, learning, and family.</p><a class="text-link" href="community.html">Explore the community guide <span aria-hidden="true">↗</span></a></div>
+<!--STRIP-->'''
+
+
+def row(title, text, link=''):
+    return f'''<li class="row"><h3>{title}</h3><div class="row-body"><p>{text}</p>{link}</div></li>'''
+
+
+def band_verse(arabic, english, cite):
+    return f'''<section class="band verse{'' if arabic else ' solo'}">
+  <div class="wrap">
+    {('<p class="arabic big" lang="ar" dir="rtl">' + arabic + '</p>') if arabic else ''}
+    <blockquote><p>{english}</p><footer class="label">{cite}</footer></blockquote>
+  </div>
+</section>'''
+
+
+PAGES = {}
+
+# ---------------------------------------------------------------- home
+PAGES['index.html'] = ('A Muslim community center in Roanoke',
+    'Jaffery Center of Roanoke is a nonprofit Shia Muslim community center at 3031 Preston Avenue NW in Roanoke, Virginia. Sunday School, Muharram, Ramadan, Eid and family gatherings.',
+    f'''
+<section class="hero">
+  <div class="hero-grid">
+    <div class="hero-copy">
+      <h1 class="display hero-h1">A Muslim community center in Roanoke</h1>
+      <p class="where"><strong>{ADDRESS_1}, {ADDRESS_2}</strong> {a('Directions' + ARROW, MAP_URL, 'tlink', True)}</p>
+      <p class="lede">Qur’an and Arabic classes for children, Muharram and Ramadan programs, Eid, and shared meals. For families in Roanoke, the New River Valley and the towns around them.</p>
+      <div class="actions">{btn('Plan a visit', 'visit.html')}{btn('Give', 'donate.html', 'line')}</div>
+    </div>
+    <figure class="plate" aria-label="Illustration of a mihrab, drawn for this site">
+      <div class="plate-art art-box" aria-hidden="true" data-art="hero" data-ox=".5" data-seed="11">{ART_LAYERS}</div>
+      <figcaption class="note">A mihrab drawn for this site. It is not a photograph of the center.</figcaption>
+    </figure>
   </div>
 </section>
-<section class="chapter chapter-faith" aria-labelledby="faith-title">
-  <div class="wrap chapter-faith-grid"><span class="chapter-num">01</span><div class="chapter-rule reveal"></div><div class="chapter-copy reveal"><p class="eyebrow">Gather in faith</p><h2 id="faith-title">Room to reflect<br><em>and reconnect.</em></h2><p>Religious programs and meaningful occasions bring our community together throughout the year. Dates and details are shared as they are confirmed.</p><a class="text-link" href="programs.html">Explore programs <span aria-hidden="true">↗</span></a></div><span class="chapter-note">FAITH IS A SHARED PRACTICE</span></div>
+
+<section class="facts" aria-label="At a glance">
+  <dl class="wrap facts-in">
+    <div><dt class="label">Address</dt><dd><span class="nw">{ADDRESS_1}</span><br>{ADDRESS_2}</dd></div>
+    <div><dt class="label">Sunday School</dt><dd>Small classes, 6 to 18 students</dd></div>
+    <div><dt class="label">Write to us</dt><dd>{a(EMAIL, 'mailto:' + EMAIL)}</dd></div>
+    <div><dt class="label">Serving</dt><dd>Roanoke, the New River Valley and nearby towns</dd></div>
+  </dl>
 </section>
-<section class="chapter chapter-learning" aria-labelledby="learning-title">
-  <div class="learning-image-wrap reveal"><img src="assets/learning-room.jpg" alt="Illustration of a quiet learning room, books open beside a window onto the mountains" loading="lazy"><span class="image-caption">Illustrative scene · not a photograph of the center</span><span class="image-index">02 / LEARNING</span></div>
-  <div class="wrap learning-copy reveal"><p class="eyebrow">Learn together</p><h2 id="learning-title">Knowledge<br>grows <em>in company.</em></h2><p>Explore Islamic learning, Qur’an study, and Sunday School in an encouraging setting for children and families.</p><a class="text-link" href="sunday-school.html">Discover Sunday School <span aria-hidden="true">↗</span></a></div>
+
+<section class="block">
+  <div class="wrap">
+    <h2 class="h2">What happens here</h2>
+    <ul class="rows">
+      {row('Sunday School', 'Volunteer teachers run small classes for children: Arabic reading, Qur’an recitation and pronunciation, and Islamic studies.', a('About Sunday School' + ARROW, 'sunday-school.html', 'tlink'))}
+      {row('Muharram', 'Daily majlis, matam, and dua and ziyarat, with food served every night. Muharram 2026 ran June 16 to June 28.', a('Muharram 2026' + ARROW, 'muharram.html', 'tlink'))}
+      {row('Ramadan and Eid', 'Lectures, worship and community gatherings during Ramadan, Eid and other special occasions.', a('All programs' + ARROW, 'programs.html', 'tlink'))}
+      {row('Family gatherings', 'Meals, celebrations and family-friendly evenings to meet other Muslims in the Roanoke area.', a('Join the community' + ARROW, 'community.html', 'tlink'))}
+    </ul>
+  </div>
 </section>
-<section class="chapter chapter-community" aria-labelledby="community-title">
-  <div class="wrap community-grid"><div class="community-image reveal"><img src="assets/community-gathering.jpg" alt="Illustration of a shared table in a sunlit room overlooking green mountain slopes" loading="lazy"><span class="image-caption">Illustrative scene · not a photograph of the center</span></div><div class="community-copy reveal"><p class="eyebrow">Find your community</p><h2 id="community-title">A welcome<br>with <em>room for all.</em></h2><p>Everyone is welcome — lifelong members, newcomers, and anyone seeking connection.</p><a class="text-link" href="about.html">Read our story <span aria-hidden="true">↗</span></a></div><span class="chapter-num chapter-num--community">03</span></div>
+
+{band_verse('وَٱعْتَصِمُوا۟ بِحَبْلِ ٱللَّهِ جَمِيعًا وَلَا تَفَرَّقُوا۟', '“And hold firmly to the rope of Allah all together and do not become divided.”', 'Qur’an 3:103, part of the verse')}
+
+<section class="block split">
+  <div class="wrap split-in">
+    <div>
+      <h2 class="h2">New to Roanoke, or new to Islam?</h2>
+      <p class="lede">We would be honored to welcome you. Visit the center, ask for the current program schedule, or write to us with any question.</p>
+    </div>
+    <div class="stack">
+      <p>To join the community WhatsApp group, email an introduction with your name, mobile number, and city and state.</p>
+      <div class="actions">{btn('Request WhatsApp access', WHATSAPP)}{btn('Visit and contact', 'visit.html', 'line')}</div>
+    </div>
+  </div>
 </section>
-<section class="announcement-stage" aria-labelledby="announcements-title"><div class="wrap announcement-grid reveal"><div><p class="eyebrow">Community notes</p><span class="announcement-rule"></span><p class="announcement-index">UPDATES / ROANOKE</p></div><div><h2 id="announcements-title">No confirmed dates<br>to share here yet.</h2><p>Program times and gatherings are announced as they are confirmed. Contact us for the latest details.</p><a class="text-link" href="visit.html">Ask about what’s coming <span aria-hidden="true">↗</span></a></div></div></section>
-<section class="learning-notebook" aria-labelledby="notebook-title"><div class="wrap notebook-stage"><div class="notebook-visual"><div class="notebook-sheet" data-notebook-page="front"><span class="notebook-edition">SUNDAY SCHOOL / ROANOKE</span><strong>Learn.<br>Reflect.<br>Grow.</strong><span class="notebook-bookmark" aria-hidden="true"></span><span class="notebook-foot">FAITH · QUR’AN · ARABIC</span></div><div class="notebook-sheet notebook-sheet-back" id="notebook-notes" hidden><span class="notebook-edition">A NOTE FOR FAMILIES</span><strong>Small steps<br>make a path.</strong><span class="notebook-foot">ASK US ABOUT REGISTRATION</span></div><button class="notebook-turn" type="button" aria-expanded="false" aria-controls="notebook-notes" data-notebook-turn>Turn the page <span aria-hidden="true">↗</span></button></div><div class="notebook-copy"><p class="eyebrow">For young learners</p><h2 id="notebook-title">A thoughtful place<br>to <em>begin.</em></h2><p>Sunday School supports children as they explore faith, Qur’an, and Arabic with volunteer teachers.</p>{button('Explore Sunday School','sunday-school.html','dark')}</div></div></section>
-<section class="visit-portal"><div class="wrap visit-portal-inner"><span class="visit-portal-index">YOUR WAY IN / ROANOKE, VIRGINIA</span><h2>Come closer.<br><em>You’re welcome here.</em></h2><p>Find the center at 3031 Preston Avenue. Reach out before you visit and we’ll help you find your way.</p>{button('Plan a visit','visit.html','light')}</div></section>'''
-page('index.html', 'Faith, family & community', 'A welcoming Islamic community center for faith, family, learning, and connection in Roanoke, Virginia.', home, 'Home')
+''')
 
-about = hero('Rooted in faith.<br><span>Growing together.</span>', 'We are a community built through worship, learning, service, and meaningful relationships in Roanoke.', 'About') + f'''
-<section class="section"><div class="wrap split"><div class="reveal"><div class="eyebrow">Our purpose</div><h2>A place to connect with faith and each other.</h2><p class="body-copy">The Jaffery Center of Roanoke is a nonprofit Shia Muslim community organization. Our mission is to provide a welcoming space for faith, education, family, and community. Everyone is welcome.</p><p class="body-copy">Through religious programs, Sunday School, educational events, and gatherings, we seek to strengthen our connection to Allah, the Qur’an, and the teachings of Prophet Muhammad (peace be upon him and his pure family).</p>{link('Find us','visit.html')}</div><div class="about-aside reveal delay-1"><figure class="about-visual glass--crystal"><img src="assets/hero-arch.jpg" alt="Illustration of an arch framing mountains at sunrise" loading="lazy"><figcaption>Illustrative artwork · not a photo of the center</figcaption></figure><div class="surface-panel glass--frosted">{icon('star')}<h3>All are welcome.</h3><p>Everyone is welcome, whether you are a lifelong member, new to Roanoke, exploring Islam, or simply looking for community.</p></div></div></div></section>
-<section class="section soft"><div class="wrap split"><div class="reveal"><div class="eyebrow">What brings us together</div><h2>Faith is something we live together.</h2><p class="body-copy">Throughout the year, our community comes together to worship, learn, reflect, and share moments that matter.</p><blockquote class="quote">“And hold firmly to the rope of Allah all together and do not become divided.”<cite>Qur’an 3:103</cite></blockquote></div><div class="number-list reveal delay-1"><div class="number-item"><span>01</span><div><h3>Faith & reflection</h3><p>Programs for Muharram, Ramadan, Eid, and other significant Islamic occasions.</p></div></div><div class="number-item"><span>02</span><div><h3>Knowledge & growth</h3><p>Islamic education and Qur’an learning that help the next generation grow.</p></div></div><div class="number-item"><span>03</span><div><h3>Community & care</h3><p>Family gatherings and lasting connections among neighbors in Roanoke.</p></div></div></div></div></section>
-<section class="section"><div class="wrap dark-panel reveal"><div class="eyebrow">Join us</div><h2>There’s a place for you here.</h2><p>Have a question or want to know what’s happening next? Send us a note. We look forward to meeting you.</p>{button('Get in touch','visit.html','gold')}</div></section>'''
-page('about.html', 'About us', 'Learn about the mission and community of the Jaffery Center of Roanoke.', about, 'About')
+# ---------------------------------------------------------------- programs
+PAGES['programs.html'] = ('Programs',
+    'Muharram, Ramadan, Eid, Sunday School, Qur’an and Arabic, and family gatherings at the Jaffery Center of Roanoke.',
+    hero_head('Programs through the year', 'Faith and community come to life through programs, education and shared celebrations. Dates change through the year, so ask the center for the current schedule.', btn('Ask for the schedule', mailto('Program schedule')))
+    + f'''
+<section class="block"><div class="wrap">
+  <ul class="rows">
+    {row('Muharram', 'Lectures, supplications, remembrance and reflection on the life, sacrifice and message of Imam Hussain, peace be upon him. Food is served nightly and all are welcome.', a('Muharram 2026' + ARROW, 'muharram.html', 'tlink'))}
+    {row('Ramadan', 'Come together during the blessed month for worship, learning and community.')}
+    {row('Eid gatherings', 'Celebrate meaningful occasions and the joy of being together with friends and family.')}
+    {row('Sunday School', 'A supportive weekly learning environment for children to explore faith, Qur’an and Arabic.', a('About Sunday School' + ARROW, 'sunday-school.html', 'tlink'))}
+    {row('Qur’an and Arabic', 'Helping children build confidence with Arabic reading and proper Qur’an pronunciation.')}
+    {row('Family gatherings', 'Shared meals and family-friendly opportunities to build friendships in the Roanoke community.')}
+  </ul>
+</div></section>
+<section class="band"><div class="wrap split-in">
+  <div><h2 class="h2">What’s coming up?</h2></div>
+  <div class="stack"><p>Event schedules change throughout the year. Email us to request access to the community WhatsApp group for current announcements.</p>
+  <div class="actions">{btn('Request updates', WHATSAPP, 'primary')}</div></div>
+</div></section>
+''')
 
-rendered_dashboard = subprocess.run(['node', '--import', 'tsx', 'src/render-dashboard.tsx'], check=True, capture_output=True, text=True).stdout
-community = hero('Faith. Learning.<br><span>Community.</span>', 'An interactive guide to community life, programs, learning, and visiting, using the verified information we have.', 'Community') + f'''\n<section class="section"><div class="wrap"><div id="community-dashboard-root">{rendered_dashboard}</div><noscript><style>.dashboard-nojs{{display:flex!important}}</style><nav class="dashboard-nojs" aria-label="Community guide links"><a class="btn btn-dark" href="programs.html">Programs</a><a class="btn btn-dark" href="sunday-school.html">Sunday School</a><a class="btn btn-dark" href="visit.html">Visit & contact</a><a class="btn btn-outline" href="about.html">About the center</a></nav></noscript></div></section>'''
-page('community.html', 'Community guide', 'Explore programs, Sunday School, visiting, and support information for the Jaffery Center of Roanoke.', community, 'Community')
+# ---------------------------------------------------------------- muharram
+PAGES['muharram.html'] = ('Muharram 2026',
+    'Muharram Programs 2026 at the Jaffery Center of Roanoke: June 16 to June 28, 2026, with Sheikh Hamza Saudagar. Daily majlis, matam, dua and ziyarat.',
+    f'''
+<section class="phead">
+  <div class="wrap">
+    <h1 class="display">Muharram Programs 2026</h1>
+    <div class="phead-side">
+      <p class="lede">June 16 to June 28, 2026, with Sheikh Hamza Saudagar. Programs began daily before Maghrib prayers.</p>
+      {WHERE}
+      <p class="notice"><strong>This program has ended.</strong> The next dates are not posted yet. Write to the center or ask for the WhatsApp group to hear when they are.</p>
+      <div class="actions">{btn('Ask about next Muharram', mailto('Muharram dates'))}{btn('Request WhatsApp access', WHATSAPP, 'line')}</div>
+    </div>
+  </div>
+</section>
+<!--STRIP-->
+<section class="block"><div class="wrap">
+  <h2 class="h2">What the nights held</h2>
+  <ul class="rows">
+    {row('Daily majlis', 'Held every day from June 16 to June 28, 2026, beginning before Maghrib prayers, with Sheikh Hamza Saudagar.')}
+    {row('Matam, dua and ziyarat', 'Part of the program each day.')}
+    {row('Food', 'Served every night of the program.')}
+  </ul>
+</div></section>
+{band_verse('', '“Hussain is from me, and I am from Hussain.”', 'Prophet Muhammad, peace be upon him and his family. Part of a longer narration reported in Sunan al-Tirmidhi and Sunan Ibn Majah.')}
+<section class="block split"><div class="wrap split-in">
+  <div><h2 class="h2">Hospitality</h2></div>
+  <div class="stack">
+    <p>Food was served nightly, and all were welcome. We warmly invited individuals and families to attend, learn and connect with the community.</p>
+    <p>Contributions of food, drinks, desserts and supplies are greatly appreciated. They help the center provide hospitality for both the brothers’ and sisters’ side.</p>
+    <p class="links">{a('Why Ashura still matters today' + ARROW, ORIGINAL + '/blog/what-is-ashura-and-why-it-still-matters-today', 'tlink', True)}{a('The original Muharram 2026 page' + ARROW, ORIGINAL + '/muharam-2026-program', 'tlink', True)}</p>
+    <p class="small">Location: {SITE}, {ADDRESS_1}, {ADDRESS_2}.</p>
+  </div>
+</div></section>
+''')
 
-programs = hero('Gather. Learn.<br><span>Grow together.</span>', 'Faith and community come to life through programs, education, and shared celebrations throughout the year.', 'Programs') + f'''
-<section class="section"><div class="wrap"><div class="section-heading reveal"><div><div class="eyebrow">Life at the center</div><h2>Something for every season of life.</h2></div><p class="body-copy">Browse the kinds of gatherings and learning opportunities hosted by our community. Contact us for current dates and details.</p></div><div class="filters reveal" role="group" aria-label="Filter programs"><button class="filter" type="button" data-filter="all" aria-pressed="true">All programs</button><button class="filter" type="button" data-filter="faith" aria-pressed="false">Faith & worship</button><button class="filter" type="button" data-filter="learning" aria-pressed="false">Learning</button><button class="filter" type="button" data-filter="community" aria-pressed="false">Community</button></div><div class="program-grid">
-<article class="program-tile glass--frosted reveal" data-category="faith"><span class="tag">Faith & worship</span>{icon('moon')}<h3>Muharram</h3><p>Gather for lectures, supplications, remembrance, and reflection on the message of Imam Hussain (A.S.).</p></article>
-<article class="program-tile glass--frosted reveal delay-1" data-category="faith"><span class="tag">Faith & worship</span>{icon('star')}<h3>Ramadan</h3><p>Come together during the blessed month for worship, learning, and community.</p></article>
-<article class="program-tile glass--frosted reveal delay-2" data-category="community"><span class="tag">Community</span>{icon('heart')}<h3>Eid gatherings</h3><p>Celebrate meaningful occasions and the joy of being together with friends and family.</p></article>
-<article class="program-tile glass--frosted reveal" data-category="learning"><span class="tag">Learning</span>{icon('book')}<h3>Sunday School</h3><p>A supportive weekly learning environment for children to explore faith, Qur’an, and Arabic.</p>{link('Explore Sunday School','sunday-school.html')}</article>
-<article class="program-tile glass--frosted reveal delay-1" data-category="learning"><span class="tag">Learning</span>{icon('book')}<h3>Qur’an & Arabic</h3><p>Helping children build confidence with Arabic reading and proper Qur’an pronunciation.</p></article>
-<article class="program-tile glass--frosted reveal delay-2" data-category="community"><span class="tag">Community</span>{icon('people')}<h3>Family gatherings</h3><p>Shared meals and family-friendly opportunities to build friendships in the Roanoke community.</p></article>
-</div></div></section>
-<section class="section mint"><div class="wrap notice reveal"><p><strong>Wondering what’s coming up?</strong><br>Event schedules change throughout the year. Email us to request access to the community WhatsApp group for current announcements.</p>{button('Request updates',WHATSAPP_MAIL)}</div></section>'''
-page('programs.html', 'Programs', 'Explore religious programs, learning, and community gatherings at the Jaffery Center of Roanoke.', programs, 'Programs')
+# ---------------------------------------------------------------- sunday school
+PAGES['sunday-school.html'] = ('Sunday School',
+    'Sunday School at the Jaffery Center of Roanoke: small classes of 6 to 18 students with volunteer teachers. Arabic reading, Qur’an recitation and pronunciation, Islamic studies.',
+    hero_head('Small classes. Lasting foundations.', 'Our Sunday School gives children a positive place to learn about Islam, the Qur’an, and the teachings of Prophet Muhammad (peace be upon him and his pure family).',
+              btn('Sign up', SIGNUP, 'primary', True) + btn('Email about registration', mailto('Sunday School registration'), 'line'))
+    + f'''
+<section class="facts"><dl class="wrap facts-in">
+  <div><dt class="label">Registration</dt><dd>By email</dd></div>
+  <div><dt class="label">Class size</dt><dd>6 to 18 students per class</dd></div>
+  <div><dt class="label">Teachers</dt><dd>Volunteers</dd></div>
+  <div><dt class="label">Subjects</dt><dd>Qur’an recitation, Arabic reading, Islamic studies</dd></div>
+</dl></section>
+<section class="block split"><div class="wrap split-in">
+  <div><h2 class="h2">Room to learn at their own pace</h2></div>
+  <div class="stack">
+    <p>Our volunteer teachers support children as they build a strong foundation in Qur’an recitation, Arabic reading and Islamic studies. Special attention is given to helping English-speaking students practice proper pronunciation step by step.</p>
+    <p>Classes are intentionally small, typically 6 to 18 students, so teachers can provide individual attention and encouragement.</p>
+    <p>We want children to build confidence, develop Islamic character, and form a meaningful connection with their faith, community and the Book of Allah.</p>
+  </div>
+</div></section>
+<section class="block"><div class="wrap">
+  <h2 class="h2">What children learn</h2>
+  <ul class="rows">
+    {row('Read with confidence', 'Students learn to recognize and read Arabic, with patient guidance that meets them where they are.')}
+    {row('Connect with the Qur’an', 'Lessons support recitation and proper pronunciation in an encouraging environment.')}
+    {row('Live their values', 'Islamic studies help children understand their faith and grow in character and community.')}
+  </ul>
+</div></section>
+<section class="block"><div class="wrap">
+  <h2 class="h2">Questions from families</h2>
+  <dl class="qa">
+    <dt>How do I register my child?</dt><dd>Use the sign-up page, or email {a(EMAIL, 'mailto:' + EMAIL)} to ask about registration, availability and the current schedule.</dd>
+    <dt>How big are the classes?</dt><dd>Typically 6 to 18 students, so volunteer teachers can give children individual attention.</dd>
+    <dt>Does my child need to know Arabic already?</dt><dd>Classes focus on helping English-speaking students build a foundation in Arabic reading and Qur’an pronunciation. Email the center to discuss your child’s needs.</dd>
+    <dt>How can we practice at home?</dt><dd>Regular short review sessions help children build confidence over time. Ask the teachers what your child is currently learning so you can practice together.</dd>
+  </dl>
+</div></section>
+<section class="band"><div class="wrap split-in">
+  <div><h2 class="h2">For parents</h2></div>
+  <div class="stack">
+    <p>The center’s Parents Guide, and its blog posts on raising children who love learning and the Qur’an, are on the previous website.</p>
+    <div class="actions">{btn('Parents Guide', PARENTS, 'primary', True)}{btn('Read the blog', BLOG, 'line', True)}</div>
+  </div>
+</div></section>
+''')
 
-school = hero('Small classes.<br><span>Lasting foundations.</span>', 'Our Sunday School gives children a positive place to learn about Islam, the Qur’an, and the teachings of Prophet Muhammad (peace be upon him and his pure family).', 'Sunday School') + f'''
-<section class="section"><div class="wrap split"><div class="reveal"><div class="eyebrow">Learning with care</div><h2>Room to learn at their own pace.</h2><p class="body-copy">Our volunteer teachers support children as they build a strong foundation in Qur’an recitation, Arabic reading, and Islamic studies. Special attention is given to helping English-speaking students practice proper pronunciation step by step.</p><p class="body-copy">Classes are intentionally small — typically 6 to 18 students — so teachers can provide individual attention and encouragement.</p>{button('Ask about registration','visit.html')}</div><div class="surface-panel glass--frosted reveal delay-1">{icon('book')}<h3>Learn. Practice. Belong.</h3><p>We want children to build confidence, develop Islamic character, and form a meaningful connection with their faith, community, and the Book of Allah.</p><div class="check-list"><span>{icon('check')} Qur’an recitation</span><span>{icon('check')} Arabic reading</span><span>{icon('check')} Islamic studies</span><span>{icon('check')} Small classes</span></div></div></div></section>
-<section class="section soft"><div class="wrap"><div class="section-heading reveal"><div><div class="eyebrow">What children learn</div><h2>Growing, one step at a time.</h2></div></div><div class="steps"><article class="step reveal"><h3>Read with confidence</h3><p>Students learn to recognize and read Arabic, with patient guidance that meets them where they are.</p></article><article class="step reveal delay-1"><h3>Connect with the Qur’an</h3><p>Lessons support recitation and proper pronunciation in an encouraging environment.</p></article><article class="step reveal delay-2"><h3>Live their values</h3><p>Islamic studies help children understand their faith and grow in character and community.</p></article></div></div></section>
-<section class="section"><div class="wrap faq"><div class="eyebrow">Good to know</div><h2>Questions from families.</h2><details><summary>How do I register my child?</summary><p>Email <a href="mailto:{EMAIL}?subject=Sunday%20School%20Inquiry">{EMAIL}</a> to ask about registration, availability, and the current schedule.</p></details><details><summary>How big are the classes?</summary><p>Classes are typically 6 to 18 students, allowing volunteer teachers to give children individual attention.</p></details><details><summary>Does my child need to know Arabic already?</summary><p>Classes focus on helping English-speaking students build a foundation in Arabic reading and Qur’an pronunciation. Email the center to discuss your child’s needs.</p></details><details><summary>How can we practice at home?</summary><p>Regular short review sessions can help children build confidence over time. Ask the teachers what your child is currently learning so you can practice together.</p></details></div></section>
-<section class="wide-cta"><div class="wrap cta-row"><div><h2>Have a question about Sunday School?</h2><p>We’d be happy to help you learn more about the program.</p></div>{button('Visit & contact','visit.html')}</div></section>'''
-page('sunday-school.html', 'Sunday School', 'Sunday School at the Jaffery Center of Roanoke: Qur’an, Arabic reading, and Islamic studies for children.', school, 'Sunday School')
+# ---------------------------------------------------------------- community
+posts = ''.join(f'<li>{a(t + ARROW, ORIGINAL + "/blog/" + s, "tlink", True)}</li>' for s, t in POSTS)
+PAGES['community.html'] = ('Community',
+    'Join the Jaffery Center community in Roanoke: the WhatsApp group, the center’s blog and YouTube channel.',
+    hero_head('Join the community', 'The community WhatsApp group shares announcements about programs, Sunday School, schedule updates and special occasions.',
+              btn('Request WhatsApp access', WHATSAPP))
+    + f'''
+<section class="block split"><div class="wrap split-in">
+  <div><h2 class="h2">How to join the group</h2></div>
+  <div class="stack">
+    <p>To request access, email the center with a brief introduction.</p>
+    <ul class="plain steps">
+      <li><strong>Introduce yourself.</strong> Include your full name, mobile number, and city and state of residence.</li>
+      <li><strong>Share a little more.</strong> Tell us about yourself and your family, how you heard about the center, and what you hope to find in the community.</li>
+    </ul>
+  </div>
+</div></section>
+<section class="block"><div class="wrap">
+  <h2 class="h2">From the center’s blog</h2>
+  <ul class="plain blog">{posts}</ul>
+  <p class="actions">{btn('All posts', BLOG, 'line', True)}{btn('YouTube channel', YOUTUBE, 'line', True)}</p>
+</div></section>
+{band_verse('وَتَعَاوَنُوا۟ عَلَى ٱلْبِرِّ وَٱلتَّقْوَىٰ ۖ وَلَا تَعَاوَنُوا۟ عَلَى ٱلْإِثْمِ وَٱلْعُدْوَٰنِ', '“And cooperate in righteousness and piety, but do not cooperate in sin and aggression.”', 'Qur’an 5:2, part of the verse')}
+''')
 
-visit = hero('Come visit.<br><span>We’d love to meet you.</span>', 'Find us in Roanoke, ask a question, or get connected with the community. We look forward to welcoming you.', 'Visit & Contact') + f'''
-<section class="section"><div class="wrap contact-grid"><div class="reveal"><div class="eyebrow">Find us & say hello</div><h2>Our door is open.</h2><p class="body-copy">Whether you’re new to the area, interested in a program, or just want to connect, you are welcome to visit. For a specific program, check current announcements.</p><div class="contact-card">{icon('pin')}<div><strong>Location</strong><p>Jaffery Center of Roanoke<br>3031 Preston Avenue<br>Roanoke, VA 24012</p></div></div><div class="contact-card">{icon('mail')}<div><strong>Email</strong><a href="mailto:{EMAIL}">{EMAIL}</a></div></div><div class="contact-card">{icon('people')}<div><strong>Community updates</strong><a href="{WHATSAPP_MAIL}">Request access to the WhatsApp group ↗</a></div></div><p class="body-copy" style="font-size:13px;margin-top:23px">Program times vary; community announcements have the latest schedule.</p></div><div class="form-box glass--frosted reveal delay-1"><h2>Send a note.</h2><p>Fill this in and we’ll prepare an email for you. Your email app will open so you can review and send it yourself.</p><form id="contact-form" action="mailto:{EMAIL}" method="post" enctype="text/plain"><label for="name">Your name</label><input id="name" name="name" autocomplete="name" required maxlength="100" placeholder="Your name"><label for="topic">What can we help with?</label><select id="topic" name="topic"><option>General question</option><option>Sunday School inquiry</option><option>Upcoming programs</option><option>Volunteering</option><option>Visiting the center</option></select><label for="message">Your message</label><textarea id="message" name="message" required maxlength="1500" placeholder="Write your message here..."></textarea><button class="btn btn-dark" type="submit">Open email app {icon('arrow')}</button><p class="note">Nothing is sent or stored by this website. Your email app opens so you can review and send. If it does not open, <a href="mailto:{EMAIL}">email us directly</a>.</p><p id="form-status" class="form-status" role="status" aria-live="polite"></p></form></div></div></section>
-<section class="section soft"><div class="wrap"><div class="direction-panel glass--frosted reveal"><div>{icon('pin','large')}<h3>3031 Preston Avenue</h3><p>Roanoke, Virginia 24012</p></div><div class="address-actions">{button('Open directions',MAP_URL,'dark',True)}<button class="btn btn-outline" type="button" data-copy-address>Copy address</button><span id="copy-status" class="sr-only" role="status" aria-live="polite"></span></div></div></div></section>
-<section class="section"><div class="wrap split"><div class="reveal"><div class="eyebrow">Stay in the loop</div><h2>Join the conversation.</h2><p class="body-copy">The community WhatsApp group shares announcements about programs, Sunday School, schedule updates, and special occasions. To request access, email the center with a brief introduction.</p>{button('Request WhatsApp access',WHATSAPP_MAIL)}</div><div class="number-list reveal delay-1"><div class="number-item"><span>01</span><div><h3>Introduce yourself</h3><p>Include your full name, mobile number, and city and state of residence.</p></div></div><div class="number-item"><span>02</span><div><h3>Share a little more</h3><p>Tell us about yourself and your family, how you heard about the center, and what you hope to find in the community.</p></div></div></div></div></section>'''
-page('visit.html', 'Visit & contact', 'Find the Jaffery Center of Roanoke at 3031 Preston Avenue, Roanoke, VA 24012. Email jafferycenter@gmail.com.', visit, 'Visit & Contact')
+# ---------------------------------------------------------------- about
+PAGES['about.html'] = ('About',
+    'The Jaffery Center of Roanoke is a nonprofit Shia Muslim community organization providing a welcoming space for faith, education, family and community.',
+    hero_head('Rooted in faith. Growing together.', 'A community built through worship, learning, service and meaningful relationships in Roanoke.', btn('Get in touch', 'visit.html'))
+    + f'''
+<section class="block split"><div class="wrap split-in">
+  <div><h2 class="h2">Our purpose</h2></div>
+  <div class="stack">
+    <p>The Jaffery Center of Roanoke is a nonprofit Shia Muslim community organization. Our mission is to provide a welcoming space for faith, education, family and community. Everyone is welcome, whether you are a lifelong member, new to Roanoke, exploring Islam, or simply looking for community.</p>
+    <p>Through religious programs, Sunday School, educational events and gatherings, we seek to strengthen our connection to Allah, the Qur’an, and the teachings of Prophet Muhammad (peace be upon him and his pure family).</p>
+    <p>We serve the Muslim community in Roanoke and the New River Valley. Our goal is to help families stay connected to faith, build friendships, and grow together in a welcoming Islamic environment.</p>
+  </div>
+</div></section>
+{band_verse('وَٱعْتَصِمُوا۟ بِحَبْلِ ٱللَّهِ جَمِيعًا وَلَا تَفَرَّقُوا۟ ۚ وَٱذْكُرُوا۟ نِعْمَتَ ٱللَّهِ عَلَيْكُمْ إِذْ كُنتُمْ أَعْدَآءً فَأَلَّفَ بَيْنَ قُلُوبِكُمْ فَأَصْبَحْتُم بِنِعْمَتِهِۦٓ إِخْوَٰنًا', '“And hold firmly to the rope of Allah all together and do not become divided. And remember the favor of Allah upon you when you were enemies and He brought your hearts together, and you became brothers by His grace.”', 'Qur’an 3:103, part of the verse')}
+<section class="block"><div class="wrap">
+  <h2 class="h2">What brings us together</h2>
+  <ul class="rows">
+    {row('Faith and reflection', 'Programs for Muharram, Ramadan, Eid and other significant Islamic occasions.')}
+    {row('Knowledge and growth', 'Islamic education and Qur’an learning that help the next generation grow.')}
+    {row('Community and care', 'Family gatherings and lasting connections among neighbors in Roanoke.')}
+  </ul>
+  <p class="actions">{btn('Get in touch', 'visit.html')}</p>
+</div></section>
+''')
 
-donate = hero('Give to the center.<br><span>Grow our community.</span>', 'Every prayer, class, and gathering is made possible through the generosity of people who care about this community.', 'Give') + f'''
-<section class="section"><div class="wrap split"><div class="reveal"><div class="eyebrow">Your support matters</div><h2>Help make space for what matters.</h2><p class="body-copy">Donations support Islamic education, youth programs, community gatherings, facility maintenance, and a welcoming place for families in Roanoke.</p><p class="body-copy">The Jaffery Center of Roanoke states that it is a nonprofit 501(c)(3) organization. For tax or receipt questions, please contact the center directly.</p></div><div class="surface-panel glass--frosted reveal delay-1">{icon('heart')}<h3>A gift to the community.</h3><p>“Who is it that will lend Allah a goodly loan so He may multiply it many times over for them?”</p><p style="font-size:12px;color:#a3aaa1;margin:0">Qur’an 2:245</p></div></div></section>
-<section class="section soft"><div class="wrap"><div class="eyebrow">Ways to help</div><h2>Choose how to give.</h2><div class="donate-options"><div class="donate-option glass--emerald reveal">{icon('heart','large')}<h3>Online giving is not available yet.</h3><p>We’re confirming the center’s official donation destination. This website does not accept payments or link to an unverified account.</p>{button('Ask about giving',f'mailto:{EMAIL}?subject=Donation%20Inquiry','dark')}</div><div class="donate-option secondary glass--frosted reveal delay-1">{icon('people','large')}<h3>Give your time</h3><p>Want to help with community gatherings or programs? Reach out to ask about current volunteer needs.</p>{button('Ask about volunteering','mailto:jafferycenter@gmail.com?subject=Volunteering%20at%20Jaffery%20Center')}</div></div></div></section>'''
-page('donate.html', 'Support the center', 'Support the Jaffery Center of Roanoke through a donation or by volunteering.', donate, 'Give')
-print('Generated:', ', '.join(path for path, _ in PAGES))
+# ---------------------------------------------------------------- visit
+topics = ['General question', 'Sunday School inquiry', 'Upcoming programs', 'Volunteering', 'Visiting the center']
+tl = ''.join(f'<li>{a(t + ARROW, mailto(t), "tlink")}</li>' for t in topics)
+PAGES['visit.html'] = ('Visit and contact',
+    'Find the Jaffery Center of Roanoke at 3031 Preston Avenue NW, Roanoke, VA 24012, or email jafferycenter@gmail.com.',
+    hero_head('Come visit', 'Whether you are new to the area, interested in a program, or just want to connect, you are welcome. For a specific program, check current announcements. Program times vary.',
+              btn('Open directions', MAP_URL, 'primary', True))
+    + f'''
+<section class="facts"><dl class="wrap facts-in">
+  <div><dt class="label">Location</dt><dd>{SITE}<br><span class="nw">{ADDRESS_1}</span><br>{ADDRESS_2}<br><button class="copy" type="button" data-copy="3031 Preston Avenue NW, Roanoke, VA 24012">Copy address</button></dd></div>
+  <div><dt class="label">Email</dt><dd>{a(EMAIL, 'mailto:' + EMAIL)}</dd></div>
+  <div><dt class="label">Updates</dt><dd>{a('Request the WhatsApp group', WHATSAPP)}</dd></div>
+</dl></section>
+<section class="block split"><div class="wrap split-in">
+  <div><h2 class="h2">Send a note</h2><p class="small">These links open your email app with the subject filled in. Nothing is sent or stored by this website.</p></div>
+  <ul class="plain blog">{tl}</ul>
+</div></section>
+''')
+
+# ---------------------------------------------------------------- donate
+PAGES['donate.html'] = ('Give',
+    'Support the Jaffery Center of Roanoke by PayPal, Venmo or Zelle. Donations support Islamic education, youth programs, community gatherings and facility maintenance.',
+    hero_head('Give to the center', 'Every prayer, class and gathering is made possible through the generosity of people who care about this community.',
+              btn('Give with PayPal', PAYPAL, 'primary', True))
+    + f'''
+<section class="block split"><div class="wrap split-in">
+  <div><h2 class="h2">Where it goes</h2></div>
+  <div class="stack">
+    <p>Donations support Islamic education, youth programs, community gatherings, facility maintenance and the continued growth of a welcoming Muslim community in Roanoke and the New River Valley.</p>
+    <p>The Jaffery Center of Roanoke is a nonprofit 501(c)(3) organization (EIN 81-1064023). For tax or receipt questions, please contact the center directly.</p>
+  </div>
+</div></section>
+<section class="block"><div class="wrap">
+  <h2 class="h2">Ways to give</h2>
+  <ul class="rows">
+    {row('PayPal', 'Give by card or PayPal balance through the center’s PayPal donation page.', a('Give with PayPal' + ARROW, PAYPAL, 'tlink', True))}
+    {row('Venmo', 'Open the center’s Venmo code to pay from the Venmo app.', a('Open Venmo code' + ARROW, VENMO, 'tlink', True))}
+    {row('Zelle', 'The center takes Zelle through a QR code. It is shown on the Donate page of the previous website, which also lists the other options.', a('See the Zelle code' + ARROW, ORIGINAL + '/donate', 'tlink', True))}
+    {row('Food and supplies', 'Contributions of food, drinks, desserts and supplies help the center provide hospitality during Muharram and other gatherings.', a('Ask about helping' + ARROW, mailto('Volunteering and contributions'), 'tlink'))}
+  </ul>
+</div></section>
+{band_verse('مَّن ذَا ٱلَّذِى يُقْرِضُ ٱللَّهَ قَرْضًا حَسَنًا فَيُضَـٰعِفَهُۥ لَهُۥٓ أَضْعَافًا كَثِيرَةً ۚ وَٱللَّهُ يَقْبِضُ وَيَبْصُۜطُ وَإِلَيْهِ تُرْجَعُونَ', '“Who is it that will lend Allah a goodly loan so He may multiply it many times over for them? And Allah withholds and grants abundance, and to Him you will be returned.”', 'Qur’an 2:245')}
+''')
+
+if __name__ == '__main__':
+    for fname, (title, desc, body) in PAGES.items():
+        (ROOT / fname).write_text(page(fname, title, desc, body), encoding='utf-8')
+    print('wrote', len(PAGES), 'pages')
